@@ -11,7 +11,8 @@ app.use(cors());
 const router = express.Router();
 
 // MongoDB 数据库
-const dbRoute = "mongodb+srv://info"; // 涉及个人数据库信息，暂不开放
+const dbRoute =
+  "mongodb+srv://pkrk_3721:qjr5gEJcAxB4SQVk@cluster0.q16db.mongodb.net/Cluster0?retryWrites=true&w=majority";
 
 // 将后端代码与数据库连接起来
 mongoose.connect(dbRoute, { useNewUrlParser: true });
