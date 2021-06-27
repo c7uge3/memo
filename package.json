@@ -1,7 +1,7 @@
 {
-  "name": "notea",
+  "name": "memo",
   "version": "1.0.0",
-  "description": "浮墨小练习",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "webpack serve",
