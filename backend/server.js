@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
+const compression = require("compression"); // gzip
 const bodyParser = require("body-parser");
 const logger = require("morgan");
 const Data = require("./data");
@@ -8,11 +9,12 @@ const Data = require("./data");
 const API_PORT = 3001;
 const app = express();
 app.use(cors());
+app.use(compression());
 const router = express.Router();
 
 // MongoDB 数据库
 const dbRoute =
-  "mongodb+srv://pkrk_3721:qjr5gEJcAxB4SQVk@cluster0.q16db.mongodb.net/Cluster0?retryWrites=true&w=majority";
+  "mongodb://pkrk_3721:qjr5gEJcAxB4SQVk@cluster0-shard-00-00.q16db.mongodb.net:27017,cluster0-shard-00-01.q16db.mongodb.net:27017,cluster0-shard-00-02.q16db.mongodb.net:27017/Cluster0?ssl=true&replicaSet=atlas-7ijfj5-shard-0&authSource=admin&retryWrites=true&w=majority";
 
 // 将后端代码与数据库连接起来
 mongoose.connect(dbRoute, { useNewUrlParser: true });
@@ -32,11 +34,9 @@ app.use(logger("dev"));
 
 // get 方法
 // 获取数据库中的所有可用数据
-router.get("/getData", (req, res) => {
-  // res.send(req.params);
+router.get("/getMemo", (req, res) => {
   const { message } = req.query;
   const keyWords = { message: { $regex: message ? message : /[\s\S]/ } }; // “[\s\S]”才会匹配任意字符，而不是“*”
-
   Data.find(keyWords, (err, data) => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true, data: data });
@@ -45,7 +45,7 @@ router.get("/getData", (req, res) => {
 
 // 更新方法
 // 会覆盖数据库中的现有数据
-router.post("/updateData", (req, res) => {
+router.post("/updateMemo", (req, res) => {
   const { id, update } = req.body;
   Data.findByIdAndUpdate(id, update, (err) => {
     if (err) return res.json({ success: false, error: err });
@@ -55,7 +55,7 @@ router.post("/updateData", (req, res) => {
 
 // 删除方法
 // 删除数据库中的现有数据
-router.delete("/deleteData", (req, res) => {
+router.delete("/deleteMemo", (req, res) => {
   const { id } = req.body;
   Data.findByIdAndRemove(id, (err) => {
     if (err) return res.send(err);
@@ -65,18 +65,15 @@ router.delete("/deleteData", (req, res) => {
 
 // 创造方法
 // 在数据库中添加新数据
-router.post("/putData", (req, res) => {
+router.post("/putMemo", (req, res) => {
   let data = new Data();
   const { message } = req.body;
-  // let createdAt  = moment(req.body.createdAt).tz("Asia/Shanghai").format('YYYY-MM-DD HH:mm:ss');
-
   if (!message) {
     return res.json({
       success: false,
       error: "INVALID INPUTS",
     });
   }
-
   data.message = message;
   data.save((err) => {
     if (err) return res.json({ success: false, error: err });
