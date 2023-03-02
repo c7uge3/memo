@@ -2,6 +2,7 @@
 /node_modules
 
 #过滤生产
+/.cache/
 /dist/
 /build/
 
