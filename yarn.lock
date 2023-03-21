@@ -240,6 +240,11 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
+"@catppuccin/palette@^0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@catppuccin/palette/-/palette-0.1.7.tgz#c5c0a1f182a37984cdd90cddd8952eddf857e769"
+  integrity sha512-tgYE1PQLEs4Nz/OA28/kD0WhJKQEvXcuL2BPVdyHYQr0zb9l03lAwRXt7ZAP5PPuczFq0BgemPPdAdG+T2FZug==
+
 "@ctrl/tinycolor@^3.4.0":
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/@ctrl/tinycolor/-/tinycolor-3.6.0.tgz#53fa5fe9c34faee89469e48f91d51a3766108bc8"

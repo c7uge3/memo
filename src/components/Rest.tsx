@@ -2,7 +2,7 @@ import React from "react";
 import "../style/style.css";
 import useCounter from "./Hook/useCounter";
 
-function Rand() {
+function Rest() {
   const { count, increment } = useCounter();
   return (
     <main className='content-div has-padding'>
@@ -19,4 +19,4 @@ function Rand() {
   );
 }
 
-export default React.memo(Rand);
+export default React.memo(Rest);

@@ -11,7 +11,7 @@ function SideBar() {
   // const currentPath = location.pathname.substring(1);
   // const defaultFlag = currentPath === "rest" ? false : true;
   const [memo, setMemo] = useState<boolean>(true);
-  const [rest, setRand] = useState<boolean>(false);
+  const [rest, setRest] = useState<boolean>(false);
   const [memoCount, setMemoCount] = useState<number>(0);
 
   // 事件委托，切换路由后设置导航对应状态
@@ -19,10 +19,10 @@ function SideBar() {
     const routeName = (e.target as HTMLAnchorElement).className;
     if (routeName === "memo") {
       setMemo(true);
-      setRand(false);
+      setRest(false);
     } else {
       setMemo(false);
-      setRand(true);
+      setRest(true);
     }
   };
 
@@ -42,7 +42,7 @@ function SideBar() {
         </span>
       </div>
       <div className='sideStat-div'>
-        <div className='sideStat-div'>{memoCount} MEMOS</div>
+        <div className='memoCount-div'>{memoCount} MEMOS</div>
         <div className='gridView-div'></div>
       </div>
       <ul className='sideMenu-ul' onClick={navClick}>
