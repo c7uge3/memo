@@ -105,10 +105,15 @@ function List(props: { listHeight: number; flip: Flip }) {
 
   // 控制是否提供删除按钮
   const isNeedOperate = (flag: string, crtKey: number) => {
-    const operateFlag = flag === "Y" ? true : false;
-    setOperateFlag(operateFlag);
-    setCrtKey(crtKey);
+    if (flag === "enter") {
+      setOperateFlag(true);
+      setCrtKey(crtKey);
+    } else if (flag === "leave") {
+      setOperateFlag(false);
+      setCrtKey(undefined);
+    }
   };
+
   const { listHeight } = props;
 
   return (
@@ -149,5 +154,3 @@ function List(props: { listHeight: number; flip: Flip }) {
     </>
   );
 }
-
-export default List;

@@ -6,8 +6,8 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
-const BundleAnalyzerPlugin =
-  require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
+// const BundleAnalyzerPlugin =
+//   require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 module.exports = {
   mode: "development",
@@ -76,7 +76,7 @@ module.exports = {
       minRatio: 0.8, // 压缩后文件大小与原文件大小的比例大于等于 0.8 时才使用压缩
     }),
     new webpack.HotModuleReplacementPlugin(),
-    new BundleAnalyzerPlugin(),
+    // new BundleAnalyzerPlugin(),
   ],
   optimization: {
     usedExports: true, // development 模式下手动开启 Tree Shaking
