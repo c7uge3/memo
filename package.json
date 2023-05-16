@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "webpack serve --config ./webpack.config.js",
-    "build": "npm run server && npm run build:client",
-    "build:client": "webpack --config ./webpack.config.js",
+    "build": "webpack --config ./webpack.config.js",
     "server": "node ./backend/server.js",
     "dev-vite": "vite",
     "build-vite": "vite build"
