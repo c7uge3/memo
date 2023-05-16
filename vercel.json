@@ -1,14 +1,21 @@
 {
   "builds": [
     {
-      "src": "/memo/backend/server.js",
+      "src": "./backend/server.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "./package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "buildCommand": "npm run build"
+      }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/memo/backend/server.js"
+      "dest": "./backend/server.js"
     }
   ]
 }
