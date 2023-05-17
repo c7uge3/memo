@@ -23,8 +23,8 @@ function List(props: { listHeight: number; flip: Flip }) {
   const [spinState, setSpinState] = useState<boolean>(true); // 加载动效
   const [emptyState, setEmptyState] = useState<boolean>(false); // “暂无数据”状态
   const getDeleteMemoRef = useRef<(id: string) => void>(() => {}); // 用于存储 deleteMemo 方法，以供事件监听函数使用
+  const currentProtocol = window.location.protocol;
   const currentDomain = window.location.hostname;
-  console.log(currentDomain);
 
   //获取 memo
   useEffect(() => {
@@ -37,7 +37,10 @@ function List(props: { listHeight: number; flip: Flip }) {
       const params: Param = { params: { message } };
       const { flip } = props; // get 方法传 prams 的方式与 post 方法有所不同
       axios
-        .get("http://" + currentDomain + ":3001/api/getMemo", params)
+        .get(
+          currentProtocol + "//" + currentDomain + ":3001/api/getMemo",
+          params
+        )
         .then((res) => {
           const { data } = res.data;
           if (data) {
@@ -68,9 +71,12 @@ function List(props: { listHeight: number; flip: Flip }) {
       console.log(id);
       const { flip } = props;
       axios
-        .delete("http://" + currentDomain + ":3001/api/deleteMemo", {
-          data: { id },
-        })
+        .delete(
+          currentProtocol + "//" + currentDomain + ":3001/api/deleteMemo",
+          {
+            data: { id },
+          }
+        )
         .then((res) => {
           const { success } = res.data;
           if (success) {
