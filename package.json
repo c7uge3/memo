@@ -57,6 +57,5 @@
     "cors": "^2.8.5",
     "mongoose": "^5.12.3",
     "morgan": "^1.10.0"
-  },
-  "proxy": "http://localhost:3001"
+  }
 }
