@@ -26,7 +26,7 @@ function List(props: { listHeight: number; flip: Flip }) {
   const currentProtocol = window.location.protocol;
   const currentDomain = window.location.hostname;
   const port = 3001;
-  let apiUrl: string = currentProtocol + "//" + currentDomain + ":" + port;
+  const apiUrl: string = currentProtocol + "//" + currentDomain + ":" + port;
 
   //获取 memo
   useEffect(() => {
