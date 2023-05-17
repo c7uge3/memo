@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 const logger = require("morgan");
 const Data = require("./data");
 
-const port = 3001;
+const port = process.env.PORT || 3001;
 const app = express();
 app.use(cors());
 app.use(compression());
@@ -92,6 +92,6 @@ router.post("/putMemo", async (req, res) => {
 app.use("/api", router);
 
 // 将 API 请求发送到端口
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`Server listening on port ${port}`);
+// });
