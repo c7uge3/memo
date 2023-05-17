@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 const logger = require("morgan");
 const Data = require("./data");
 
-const port = process.env.PORT || 3001;
+const port = 3001;
 const app = express();
 app.use(cors());
 app.use(compression());
