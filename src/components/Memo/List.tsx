@@ -66,7 +66,6 @@ function List(props: { listHeight: number; flip: Flip }) {
 
     // 删除 memo
     function deleteMemo(id: string) {
-      console.log(id);
       const { flip } = props;
       axios
         .delete(apiUrl + "/api/deleteMemo", {
