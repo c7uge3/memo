@@ -1,21 +1,22 @@
 {
+  "framework": "react",
   "builds": [
     {
-      "src": "server.js",
+      "src": "./backend/server.js",
       "use": "@vercel/node"
     },
     {
-      "src": "package.json",
+      "src": "./package.json",
       "use": "@vercel/static-build",
       "config": {
-        "buildCommand": "npm run build"
+        "buildCommand": "npm run build && npm run server"
       }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server.js"
+      "dest": "./backend/server.js"
     }
   ]
 }
