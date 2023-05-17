@@ -92,6 +92,6 @@ router.post("/putMemo", async (req, res) => {
 app.use("/api", router);
 
 // 将 API 请求发送到端口
-// app.listen(port, () => {
-//   console.log(`Server listening on port ${port}`);
-// });
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
