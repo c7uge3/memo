@@ -25,6 +25,14 @@ function List(props: { listHeight: number; flip: Flip }) {
   const getDeleteMemoRef = useRef<(id: string) => void>(() => {}); // 用于存储 deleteMemo 方法，以供事件监听函数使用
   const currentProtocol = window.location.protocol;
   const currentDomain = window.location.hostname;
+  const port = window.location.port;
+  let finalPort = port === "3000" ? 3001 : port;
+  let apiUrl: string = "";
+  if (finalPort) {
+    apiUrl = currentProtocol + "//" + currentDomain + ":" + finalPort;
+  } else {
+    apiUrl = currentProtocol + "//" + currentDomain;
+  }
 
   //获取 memo
   useEffect(() => {
@@ -37,10 +45,7 @@ function List(props: { listHeight: number; flip: Flip }) {
       const params: Param = { params: { message } };
       const { flip } = props; // get 方法传 prams 的方式与 post 方法有所不同
       axios
-        .get(
-          currentProtocol + "//" + currentDomain + ":3001/api/getMemo",
-          params
-        )
+        .get(apiUrl + "/api/getMemo", params)
         .then((res) => {
           const { data } = res.data;
           if (data) {
@@ -71,12 +76,9 @@ function List(props: { listHeight: number; flip: Flip }) {
       console.log(id);
       const { flip } = props;
       axios
-        .delete(
-          currentProtocol + "//" + currentDomain + ":3001/api/deleteMemo",
-          {
-            data: { id },
-          }
-        )
+        .delete(apiUrl + "/api/deleteMemo", {
+          data: { id },
+        })
         .then((res) => {
           const { success } = res.data;
           if (success) {
