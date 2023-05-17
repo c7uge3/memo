@@ -25,14 +25,8 @@ function List(props: { listHeight: number; flip: Flip }) {
   const getDeleteMemoRef = useRef<(id: string) => void>(() => {}); // 用于存储 deleteMemo 方法，以供事件监听函数使用
   const currentProtocol = window.location.protocol;
   const currentDomain = window.location.hostname;
-  const port = window.location.port;
-  let finalPort = port === "3000" ? 3001 : port;
-  let apiUrl: string = "";
-  if (finalPort) {
-    apiUrl = currentProtocol + "//" + currentDomain + ":" + finalPort;
-  } else {
-    apiUrl = currentProtocol + "//" + currentDomain;
-  }
+  const port = 3001;
+  let apiUrl: string = currentProtocol + "//" + currentDomain + ":" + port;
 
   //获取 memo
   useEffect(() => {
