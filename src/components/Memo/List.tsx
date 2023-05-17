@@ -35,7 +35,7 @@ function List(props: { listHeight: number; flip: Flip }) {
       const params: Param = { params: { message } };
       const { flip } = props; // get 方法传 prams 的方式与 post 方法有所不同
       axios
-        .get("http://localhost:3001/api/getMemo", params)
+        .get("/api/getMemo", params)
         .then((res) => {
           const { data } = res.data;
           if (data) {
@@ -66,7 +66,7 @@ function List(props: { listHeight: number; flip: Flip }) {
       console.log(id);
       const { flip } = props;
       axios
-        .delete("http://localhost:3001/api/deleteMemo", { data: { id } })
+        .delete("/api/deleteMemo", { data: { id } })
         .then((res) => {
           const { success } = res.data;
           if (success) {
