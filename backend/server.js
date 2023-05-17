@@ -17,7 +17,7 @@ const dbRoute =
   "mongodb://pkrk_3721:qjr5gEJcAxB4SQVk@cluster0-shard-00-00.q16db.mongodb.net:27017,cluster0-shard-00-01.q16db.mongodb.net:27017,cluster0-shard-00-02.q16db.mongodb.net:27017/Cluster0?ssl=true&replicaSet=atlas-7ijfj5-shard-0&authSource=admin&retryWrites=true&w=majority";
 
 // 将后端代码与数据库连接起来
-mongoose.connect(dbRoute, { useNewUrlParser: true });
+mongoose.connect(dbRoute, { useNewUrlParser: true, useUnifiedTopology: true });
 
 let db = mongoose.connection;
 
