@@ -2,17 +2,11 @@
   "builds": [
     {
       "src": "./backend/server.js",
-      "use": "@vercel/node",
-      "config": {
-        "buildCommand": "node ./backend/server.js"
-      }
+      "use": "@vercel/node"
     },
     {
       "src": "./package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "buildCommand": "npm run build"
-      }
+      "use": "@vercel/static-build"
     }
   ],
   "routes": [
