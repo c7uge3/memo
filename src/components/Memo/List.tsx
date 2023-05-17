@@ -23,10 +23,9 @@ function List(props: { listHeight: number; flip: Flip }) {
   const [spinState, setSpinState] = useState<boolean>(true); // 加载动效
   const [emptyState, setEmptyState] = useState<boolean>(false); // “暂无数据”状态
   const getDeleteMemoRef = useRef<(id: string) => void>(() => {}); // 用于存储 deleteMemo 方法，以供事件监听函数使用
-  const currentProtocol = window.location.protocol;
-  const currentDomain = window.location.hostname;
-  const port = 3001;
-  const apiUrl: string = currentProtocol + "//" + currentDomain + ":" + port;
+  const domain: string = "http://localhost";
+  const port: number = 3001;
+  const apiUrl: string = domain + ":" + port;
 
   //获取 memo
   useEffect(() => {
