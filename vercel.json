@@ -5,11 +5,11 @@
   },
   "builds": [
     {
-      "src": "/backend/server.js",
+      "src": "./backend/server.js",
       "use": "@vercel/node"
     },
     {
-      "src": "/package.json",
+      "src": "./package.json",
       "use": "@vercel/static-build",
       "config": {
         "buildCommand": "npm run build"
@@ -19,7 +19,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/server.js"
+      "dest": "./backend/server.js"
     }
   ]
 }
