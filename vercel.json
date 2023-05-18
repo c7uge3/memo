@@ -1,14 +1,10 @@
 {
   "builds": [
     {
-      "src": "/backend/server.js",
-      "use": "@vercel/node"
-    },
-    {
       "src": "/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "buildCommand": "npm run build"
+        "buildCommand": "npm run build && npm run server"
       }
     }
   ],
