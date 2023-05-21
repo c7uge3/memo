@@ -8,17 +8,19 @@ const bodyParser = require("body-parser");
 const logger = require("morgan");
 const Data = require("./data");
 
-const port = "3017";
+// const port = "3037";
 const app = express();
 app.use(cors());
 app.use(compression());
 const router = express.Router();
-
+require("dotenv").config();
+const dbRoute = process.env.MONGODB_URI;
 // MongoDB 数据库
-const dbRoute =
-  "mongodb+srv://vercel-admin-user-64662ac8365ca81155b8c6fa:Wbsqxu2EPngggzPj@cluster0.q16db.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 mongoose
-  .connect(dbRoute, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(dbRoute, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("Connected to database!"))
   .catch((err) => console.error(err));
 
@@ -88,6 +90,7 @@ router.post("/putMemo", async (req, res) => {
 app.use("/api", router);
 
 // 将 API 请求发送到端口
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`Server listening on port ${port}`);
+// });
+app.listen();
