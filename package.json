@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./api/server.js",
     "dev": "webpack serve --config ./webpack.config.js",
-    "build": "npm start && webpack --config ./webpack.config.js &",
+    "build": "webpack --config ./webpack.config.js && npm start &",
     "dev-vite": "vite",
     "build-vite": "vite build"
   },

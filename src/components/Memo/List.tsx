@@ -6,6 +6,7 @@ import Empty from "../Common/emptyBox";
 import Loading from "../Common/loading";
 import "../Common/emptyBox/style/index.less";
 import "./../../components/Common/loading/style/index.less";
+import apiURL from "../../util/apiURL";
 
 type Flip = ({
   children,
@@ -23,10 +24,6 @@ function List(props: { listHeight: number; flip: Flip }) {
   const [spinState, setSpinState] = useState<boolean>(true); // 加载动效
   const [emptyState, setEmptyState] = useState<boolean>(false); // “暂无数据”状态
   const getDeleteMemoRef = useRef<(id: string) => void>(() => {}); // 用于存储 deleteMemo 方法，以供事件监听函数使用
-  const currentProtocol = window.location.protocol;
-  const currentDomain = window.location.hostname;
-  const port = "3007";
-  const apiUrl: string = currentProtocol + "//" + currentDomain + ":" + port;
 
   //获取 memo
   useEffect(() => {
@@ -39,7 +36,7 @@ function List(props: { listHeight: number; flip: Flip }) {
       const params: Param = { params: { message } };
       const { flip } = props; // get 方法传 prams 的方式与 post 方法有所不同
       axios
-        .get(apiUrl + "/api/getMemo", params)
+        .get(apiURL + "/api/getMemo", params)
         .then((res) => {
           const { data } = res.data;
           if (data) {
@@ -69,7 +66,7 @@ function List(props: { listHeight: number; flip: Flip }) {
     function deleteMemo(id: string) {
       const { flip } = props;
       axios
-        .delete(apiUrl + "/api/deleteMemo", {
+        .delete(apiURL + "/api/deleteMemo", {
           data: { id },
         })
         .then((res) => {

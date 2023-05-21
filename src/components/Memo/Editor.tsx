@@ -4,6 +4,7 @@ import ReactQuill from "react-quill";
 import axios from "axios";
 import "react-quill/dist/quill.snow.css";
 import { toast, ToastTransitionProps } from "react-toastify";
+import apiURL from "../../util/apiURL";
 
 type Flip = ({
   children,
@@ -63,7 +64,7 @@ function Editor(props: {
    */
   const putMemo = useCallback((message: string) => {
     axios
-      .post("http://localhost:3001/api/putMemo", { message })
+      .post(apiURL + "/api/putMemo", { message })
       .then((res) => {
         const { success } = res.data;
         const { flip } = props;
