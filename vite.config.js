@@ -21,12 +21,6 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["fav.png"],
-      strategies: "injectManifest",
-      srcDir: "src",
-      filename: "sw.js",
-      injectManifest: {
-        injectionPoint: undefined,
-      },
       manifest: {
         name: "MEMO",
         short_name: "MEMO",
