@@ -16,11 +16,6 @@ export default defineConfig({
       algorithm: "gzip",
       ext: ".gz",
     }),
-    visualizer({
-      filename: "./dist/stats.html",
-      open: true,
-      gzipSize: true,
-    }),
     legacy({
       targets: ["defaults", "not IE 11"],
     }),
@@ -79,7 +74,7 @@ export default defineConfig({
   build: {
     minify: "terser",
     target: "es2015", // 指定目标环境
-    outDir: "build",
+    outDir: "dist",
     sourcemap: true,
     terserOptions: {
       compress: {
