@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "vercel build --prebuilt && vercel deploy --prod"
+    "deploy": "vercel build --prebuilt && vercel deploy --prod && npm start &"
   },
   "keywords": [
     "memo",
