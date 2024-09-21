@@ -16,8 +16,9 @@
   "routes": [
     { "handle": "filesystem" },
     {
-      "src": "/api/(.*)",
-      "dest": "api/server.mjs"
+      "src": "/sw.js",
+      "dest": "/sw.js",
+      "headers": { "cache-control": "public, max-age=0, must-revalidate" }
     },
     { "src": "/.*", "dest": "/index.html" }
   ]
