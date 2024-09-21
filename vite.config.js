@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import vercel from "vite-plugin-vercel";
 import compression from "vite-plugin-compression";
-import { visualizer } from "rollup-plugin-visualizer";
 import legacy from "@vitejs/plugin-legacy";
 import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
