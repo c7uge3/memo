@@ -1,0 +1,17 @@
+#过滤依赖
+/node_modules
+
+#过滤生产
+/dist/
+/build/
+
+#MacOS的隐藏文件
+.DS_Store
+
+#过滤平台
+.cache
+.vercel
+.vscode
+
+#环境变量
+.env
