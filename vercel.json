@@ -15,11 +15,10 @@
   ],
   "routes": [
     { "handle": "filesystem" },
-    {
-      "src": "/sw.js",
-      "dest": "/sw.js",
-      "headers": { "cache-control": "public, max-age=0, must-revalidate" }
-    },
-    { "src": "/.*", "dest": "/index.html" }
-  ]
+    { "src": "/api/(.*)", "dest": "/api/server.mjs" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ],
+  "env": {
+    "VITE_SERVER_URL": "http://localhost:3000"
+  }
 }

@@ -9,7 +9,7 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
-const port = "3037";
+const PORT = process.env.PORT || 3037;
 const app = express();
 app.use(cors());
 app.use(compression());
@@ -104,8 +104,7 @@ app.use(limiter);
 // 为 http 请求添加 /api
 app.use("/api", router);
 
-// 将 API 请求发送到端口
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+// 监听
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
-app.listen();

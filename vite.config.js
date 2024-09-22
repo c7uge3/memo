@@ -7,7 +7,8 @@ import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
 
 export default defineConfig({
-  base: "./",
+  base: "/",
+  root: process.cwd(),
   plugins: [
     react(),
     vercel(),
@@ -37,6 +38,7 @@ export default defineConfig({
         ],
       },
       workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
         runtimeCaching: [
           {
             urlPattern: /\.(?:js|css|html)$/,
@@ -69,6 +71,12 @@ export default defineConfig({
     hmr: {
       overlay: false,
     },
+    proxy: {
+      "/api": {
+        target: "http://localhost:3037",
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     minify: "terser",
@@ -85,6 +93,9 @@ export default defineConfig({
     assetsInlineLimit: 4096, // 4kb
     assetsDir: "assets",
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+      },
       output: {
         assetFileNames: (assetInfo) => {
           let extType = assetInfo.name.split(".")[1];
@@ -118,5 +129,8 @@ export default defineConfig({
     modules: {
       localsConvention: "camelCaseOnly",
     },
+  },
+  define: {
+    'process.env': {}
   },
 });
