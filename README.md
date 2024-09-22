@@ -11,7 +11,7 @@ Memo 是一个笔记应用，提供笔记的增删查功能。
 
 ## 在线演示
 
-项目已部署至 [Vercel](https://memo-chiowang.vercel.app)
+项目已部署至 [Vercel](https://memo-rosy.vercel.app/memo)
 
 ## 技术栈
 
