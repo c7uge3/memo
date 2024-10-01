@@ -5,6 +5,7 @@ import ErrorBoundary from "./Memo/ErrorBoundary";
 import Loading from "./Common/loading";
 
 const Memo = lazy(() => import("./Memo"));
+const Dify = lazy(() => import("./Dify"));
 const Rest = lazy(() => import("./Rest"));
 
 export default function Wrapper() {
@@ -24,6 +25,7 @@ export default function Wrapper() {
             <Routes>
               <Route path='/' element={<Memo />} />
               <Route path='/memo' element={<Memo />} />
+              <Route path='/dify' element={<Dify />} />
               <Route path='/rest' element={<Rest />} />
             </Routes>
           </Suspense>
