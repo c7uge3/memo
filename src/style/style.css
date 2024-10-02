@@ -564,3 +564,51 @@ span.ipt-span svg.fa-clear {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+.edit-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.btn {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.btn-save {
+  background-color: #637dff;
+  color: white;
+}
+
+.btn-save:hover {
+  background-color: #637dff;
+}
+
+.btn-cancel {
+  background-color: #ddd;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #ddd;
+}
+
+.memoCard-div.editing {
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.memoCard-div.editing .quill {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}

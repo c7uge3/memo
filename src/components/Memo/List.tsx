@@ -1,11 +1,25 @@
-import React, { useState, useEffect, useCallback, useMemo, memo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  memo,
+  useRef,
+} from "react";
 import { useAtom, useSetAtom } from "jotai";
 import { toast, Zoom } from "react-toastify";
 import useSWR, { mutate } from "swr";
 import axios from "axios";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
+import { modules, formats } from "../../util/quillConfig";
 
 import Empty from "../Common/emptyBox";
-import { API_GET_MEMO, API_DELETE_MEMO } from "../../util/apiURL";
+import {
+  API_GET_MEMO,
+  API_DELETE_MEMO,
+  API_UPDATE_MEMO,
+} from "../../util/apiURL";
 import { searchValueAtom, memoCountAtom } from "./atoms";
 
 import "../Common/emptyBox/style/index.less";
@@ -29,21 +43,21 @@ interface ListProps {
  * @returns memo 列表
  */
 function List({ listHeight }: ListProps) {
-  const [searchValue] = useAtom(searchValueAtom); // 搜索值
-  const [operateFlag, setOperateFlag] = useState<boolean>(false); // 删除按钮的显示状态
-  const [crtKey, setCrtKey] = useState<number | undefined>(undefined); // 当前操作的 key
-  const setMemoCount = useSetAtom(memoCountAtom); // Jotai 管理 memoCount 状态
+  const [searchValue] = useAtom(searchValueAtom);
+  const [operateFlag, setOperateFlag] = useState<boolean>(false);
+  const [crtKey, setCrtKey] = useState<number | undefined>(undefined);
+  const setMemoCount = useSetAtom(memoCountAtom);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const quillRef = useRef<ReactQuill>(null);
 
-  // 设置 toast 对象，用于显示 toast 消息
   const toastObj = useMemo(
     () => ({
       transition: Zoom,
       autoClose: 1000,
     }),
-    [] // 只在组件挂载和卸载时执行
+    []
   );
 
-  // 获取 memo列表，使用 SWR 管理数据
   const fetcher = async ([url, message]: [string, string]): Promise<
     MemoItem[]
   > => {
@@ -51,7 +65,6 @@ function List({ listHeight }: ListProps) {
     return data.data;
   };
 
-  // 使用 SWR 获取 memo 列表
   const { data: listData, error } = useSWR<MemoItem[], Error>(
     [API_GET_MEMO, searchValue],
     fetcher,
@@ -64,68 +77,118 @@ function List({ listHeight }: ListProps) {
     }
   );
 
-  /**
-   * MemoItem 组件，用于渲染单个 memo
-   * @param props：MemoItemProps，包含memo数据和索引
-   * @returns 单条 memo
-   */
   const MemoItem = React.memo(
     ({ item, index }: { item: MemoItem; index: number }) => {
       const { _id, createdAt, message } = item;
       const canOperate = operateFlag && index === crtKey;
+      const [editedMessage, setEditedMessage] = useState(message);
+      const isEditing = editingId === _id;
+
+      const handleEdit = useCallback(() => {
+        setEditingId(_id);
+        setEditedMessage(message);
+      }, [_id, message]);
+
+      const handleSave = useCallback(async () => {
+        try {
+          const { data } = await axios.patch(API_UPDATE_MEMO, {
+            id: _id,
+            message: editedMessage,
+          });
+          if (data.success) {
+            toast.success("更新成功", toastObj);
+            mutate([API_GET_MEMO, searchValue]);
+          } else {
+            toast.error("更新失败", toastObj);
+          }
+        } catch (e) {
+          toast.error(`🦄 ${e}`, toastObj);
+        }
+        setEditingId(null);
+      }, [_id, editedMessage, toastObj, searchValue]);
+
+      const handleCancel = useCallback(() => {
+        setEditedMessage(message);
+        setEditingId(null);
+      }, [message]);
+
+      useEffect(() => {
+        // 只在进入编辑模式时更新 editedMessage
+        if (isEditing) {
+          setEditedMessage(message);
+        }
+      }, [isEditing, message]);
 
       return (
         <li
           className='memoCard-li'
           onMouseEnter={() => isNeedOperate("Y", index)}
-          onMouseLeave={() => isNeedOperate("n", index)}>
+          onMouseLeave={() => isNeedOperate("n", index)}
+          onDoubleClick={handleEdit}>
           <label className='memoTime-label'>{createdAt}</label>
-          {canOperate && (
-            <label className='operate-label' onClick={() => deleteMemo(_id)}>
-              ✖
-            </label>
+          {canOperate && !isEditing && (
+            <>
+              <label className='operate-label' onClick={() => deleteMemo(_id)}>
+                ✖
+              </label>
+              <label className='operate-label' onClick={handleEdit}>
+                ✎
+              </label>
+            </>
           )}
-          <div
-            className='memoCard-div'
-            dangerouslySetInnerHTML={{ __html: message }}
-          />
+          {isEditing ? (
+            <div className='memoCard-div editing'>
+              <ReactQuill
+                value={editedMessage}
+                modules={modules}
+                formats={formats}
+                ref={quillRef}
+                onChange={setEditedMessage}
+              />
+              <div className='edit-buttons'>
+                <button className='btn btn-save' onClick={handleSave}>保存</button>
+                <button className='btn btn-cancel' onClick={handleCancel}>取消</button>
+              </div>
+            </div>
+          ) : (
+            <div
+              className='memoCard-div'
+              dangerouslySetInnerHTML={{ __html: message }}
+            />
+          )}
         </li>
       );
     }
   );
 
-  /**
-   * 删除 memo
-   * @param id：memo 的 id
-   * @returns 删除 memo 后的结果
-   */
-  const deleteMemo = useCallback(async (id: string) => {
-    try {
-      const { data } = await axios.delete(API_DELETE_MEMO, { data: { id } });
-      if (data.success) {
-        toast.success("删除成功", toastObj);
-        if (listData) setMemoCount(listData.length - 1);
-        mutate([API_GET_MEMO, searchValue]);
-      } else {
-        toast.error("删除失败", toastObj);
+  const deleteMemo = useCallback(
+    async (id: string) => {
+      try {
+        const { data } = await axios.delete(API_DELETE_MEMO, { data: { id } });
+        if (data.success) {
+          toast.success("删除成功", toastObj);
+          if (listData) setMemoCount(listData.length - 1);
+          mutate([API_GET_MEMO, searchValue]);
+        } else {
+          toast.error("删除失败", toastObj);
+        }
+      } catch (e) {
+        toast.error(`🦄 ${e}`, toastObj);
       }
-    } catch (e) {
-      toast.error(`🦄 ${e}`, toastObj);
-    }
-  }, []);
+    },
+    [listData, setMemoCount, searchValue, toastObj]
+  );
 
-  // 设置 operateFlag 和 crtKey
   const isNeedOperate = useCallback((flag: string, key: number) => {
     setOperateFlag(flag === "Y");
     setCrtKey(key);
   }, []);
 
-  // 设置 memo 数量，并重新获取memo列表
   useEffect(() => {
     if (listData) {
       setMemoCount(listData.length);
     }
-  }, [listData, searchValue]); // 任一依赖项产生变化，重新获取 memo 列表
+  }, [listData, searchValue, setMemoCount]);
 
   return (
     <>

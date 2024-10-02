@@ -50,11 +50,29 @@ router.get("/getMemo", async (req, res) => {
 
 // 更新方法
 // 会覆盖数据库中的现有数据
-router.post("/updateMemo", async (req, res) => {
+router.patch("/updateMemo", async (req, res) => {
   try {
-    const { id, update } = req.body;
-    await Data.findByIdAndUpdate(id, update);
-    return res.json({ success: true });
+    const { id, message } = req.body;
+    console.log(id, message);
+    // 输入验证
+    if (!id || !message) {
+      return res.status(400).json({ success: false, error: "缺少必要的参数" });
+    }
+
+    // 使用 { new: true } 选项返回更新后的文档
+    const updatedMemo = await Data.findByIdAndUpdate(
+      id,
+      { message },
+      { new: true }
+    );
+
+    if (!updatedMemo) {
+      return res
+        .status(404)
+        .json({ success: false, error: "未找到指定的 memo" });
+    }
+
+    return res.json({ success: true, data: updatedMemo });
   } catch (err) {
     handleError(res, err);
   }
