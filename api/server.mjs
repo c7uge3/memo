@@ -52,8 +52,8 @@ router.get("/getMemo", async (req, res) => {
 // 会覆盖数据库中的现有数据
 router.patch("/updateMemo", async (req, res) => {
   try {
-    const { id, message } = req.body;
-    console.log(id, message);
+    const { id, message, tags } = req.body;
+
     // 输入验证
     if (!id || !message) {
       return res.status(400).json({ success: false, error: "缺少必要的参数" });
@@ -62,7 +62,7 @@ router.patch("/updateMemo", async (req, res) => {
     // 使用 { new: true } 选项返回更新后的文档
     const updatedMemo = await Data.findByIdAndUpdate(
       id,
-      { message },
+      { message, tags },
       { new: true }
     );
 
@@ -101,7 +101,7 @@ router.post("/putMemo", async (req, res) => {
         error: "INVALID INPUTS",
       });
     }
-    const data = new Data({ message });
+    const data = new Data({ message, tags });
     await data.save();
     return res.json({ success: true });
   } catch (err) {

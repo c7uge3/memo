@@ -12,6 +12,7 @@ const DataSchema = new mongoose.Schema(
       set: (date) =>
         moment(date, "YYYY-MM-DD HH:mm:ss").tz("Asia/Shanghai").toDate(),
     },
+    tags: [String],
   },
   {
     timestamps: { createdAt: false, updatedAt: "updatedAt" },
