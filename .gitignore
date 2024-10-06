@@ -12,6 +12,7 @@
 .cache
 .vercel
 .vscode
+.code-workspace
 
 #环境变量
 .env
