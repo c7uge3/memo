@@ -612,3 +612,36 @@ span.ipt-span svg.fa-clear {
   border-radius: 4px;
   margin-bottom: 10px;
 }
+
+.operate-buttons {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: flex;
+  gap: 10px;
+}
+
+.operate-label {
+  cursor: pointer;
+  padding: 0 5px;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.operate-label.delete {
+  background-color: #ffcccc;
+}
+
+.operate-label.edit {
+  background-color: #ccffcc;
+}
+
+.operate-label.delete:hover {
+  background-color: #ff9999;
+  transform: scale(1.1);
+}
+
+.operate-label.edit:hover {
+  background-color: #99ff99;
+  transform: scale(1.1);
+}

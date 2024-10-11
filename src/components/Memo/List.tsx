@@ -127,14 +127,16 @@ function List({ listHeight }: ListProps) {
           onDoubleClick={handleEdit}>
           <label className='memoTime-label'>{createdAt}</label>
           {canOperate && !isEditing && (
-            <>
-              <label className='operate-label' onClick={() => deleteMemo(_id)}>
-                ✖
-              </label>
-              <label className='operate-label' onClick={handleEdit}>
+            <div className='operate-buttons'>
+              <span className='operate-label edit' onClick={handleEdit}>
                 ✎
-              </label>
-            </>
+              </span>
+              <span
+                className='operate-label delete'
+                onClick={() => deleteMemo(_id)}>
+                ✖
+              </span>
+            </div>
           )}
           {isEditing ? (
             <div className='memoCard-div editing'>
@@ -146,8 +148,12 @@ function List({ listHeight }: ListProps) {
                 onChange={setEditedMessage}
               />
               <div className='edit-buttons'>
-                <button className='btn btn-save' onClick={handleSave}>保存</button>
-                <button className='btn btn-cancel' onClick={handleCancel}>取消</button>
+                <button className='btn btn-save' onClick={handleSave}>
+                  保存
+                </button>
+                <button className='btn btn-cancel' onClick={handleCancel}>
+                  取消
+                </button>
               </div>
             </div>
           ) : (
