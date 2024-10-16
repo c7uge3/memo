@@ -1,44 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React, { Component, ErrorInfo, ReactNode } from "react";
 
-interface ErrorBoundaryProps {
-  children: React.ReactNode;
+interface Props {
+  children: ReactNode;
 }
 
-const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({ children }) => {
-  const [hasError, setHasError] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+interface State {
+  hasError: boolean;
+  error: Error | null;
+}
 
-  useEffect(() => {
-    const errorHandler = (error: ErrorEvent) => {
-      setHasError(true);
-      setError(error.error);
-      console.error("Error caught by ErrorBoundary:", error);
-    };
+class ErrorBoundary extends Component<Props, State> {
+  public state: State = {
+    hasError: false,
+    error: null,
+  };
 
-    window.addEventListener("error", errorHandler);
-
-    return () => {
-      window.removeEventListener("error", errorHandler);
-    };
-  }, []);
-
-  if (hasError) {
-    return (
-      <div
-        className='error-boundary'
-        style={{ textAlign: "center", color: "red" }}>
-        <h1>出错了，请稍后再试。</h1>
-        {process.env.NODE_ENV === "development" && (
-          <details style={{ whiteSpace: "pre-wrap" }}>
-            {error && error.toString()}
-          </details>
-        )}
-        <button onClick={() => setHasError(false)}>重试</button>
-      </div>
-    );
+  public static getDerivedStateFromError(error: Error): State {
+    // 更新 state 使下一次渲染能够显示降级后的 UI
+    return { hasError: true, error };
   }
 
-  return <>{children}</>;
-};
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+
+  public render() {
+    if (this.state.hasError) {
+      return (
+        <div
+          className='error-boundary'
+          style={{ textAlign: "center", color: "red" }}>
+          <h1>出错了，请稍后再试。</h1>
+          {process.env.NODE_ENV === "development" && (
+            <details style={{ whiteSpace: "pre-wrap" }}>
+              {this.state.error && this.state.error.toString()}
+            </details>
+          )}
+          <button onClick={() => this.setState({ hasError: false })}>
+            重试
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 export default ErrorBoundary;
