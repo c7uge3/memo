@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Loading from "./Common/loading";
-import "../style/style.css";
 
 /**
  * Dify 组件，用于接入 Dify 聊天机器人

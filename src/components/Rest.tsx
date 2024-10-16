@@ -1,5 +1,4 @@
 import React from "react";
-import "../style/style.css";
 import useCounter from "./Hook/useCounter";
 
 /**
