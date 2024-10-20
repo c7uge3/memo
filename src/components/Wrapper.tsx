@@ -1,36 +1,49 @@
-import React, { lazy, useState, Suspense } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import SideBar from "./SideBar";
-import ErrorBoundary from "./Memo/ErrorBoundary";
-import Loading from "./Common/loading";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  Dispatch,
+  SetStateAction,
+  FC,
+  memo,
+} from "react";
+import { BrowserRouter as Router } from "react-router-dom";
+import AppRoutes from "./AppRoutes";
 
-const Memo = lazy(() => import("./Memo"));
-const Dify = lazy(() => import("./Dify"));
-const Rest = lazy(() => import("./Rest"));
-
-export default function Wrapper() {
+const Wrapper: FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const handleSetIsCollapsed = useCallback<Dispatch<SetStateAction<boolean>>>(
+    (value) => {
+      setIsCollapsed(value);
+    },
+    []
+  );
+
+  const memoizedAppRoutesProps = useMemo(
+    () => ({
+      isCollapsed,
+      setIsCollapsed: handleSetIsCollapsed,
+    }),
+    [isCollapsed, handleSetIsCollapsed]
+  );
+
+  // 预加载 Rest 组件
+  useEffect(() => {
+    const preloadRest = () => {
+      import("./Content/Rest");
+    };
+    preloadRest();
+  }, []);
 
   return (
     <section className='wrapper-div'>
-      <BrowserRouter>
-        <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-        <ErrorBoundary>
-          <Suspense
-            fallback={
-              <div className='fade-in'>
-                <Loading spinning={true} />
-              </div>
-            }>
-            <Routes>
-              <Route path='/' element={<Memo />} />
-              <Route path='/memo' element={<Memo />} />
-              <Route path='/dify' element={<Dify />} />
-              <Route path='/rest' element={<Rest />} />
-            </Routes>
-          </Suspense>
-        </ErrorBoundary>
-      </BrowserRouter>
+      <Router>
+        <AppRoutes {...memoizedAppRoutesProps} />
+      </Router>
     </section>
   );
-}
+};
+
+export default memo(Wrapper);

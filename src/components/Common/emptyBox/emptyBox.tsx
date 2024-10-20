@@ -11,7 +11,7 @@ const EmptyBox: React.FC<EmptyProps> = ({
   <>
     {isShow ? (
       <div className={prefixCls}>
-        <img src={imageSrc} alt='Empty' width={64} height={64} />
+        <img src={imageSrc} alt='Empty' width={64} height={64} loading='lazy' />
         <label>{description}</label>
       </div>
     ) : null}

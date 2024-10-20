@@ -73,7 +73,7 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        target: "http://localhost:3037",
+        target: "http://localhost:3001",
         changeOrigin: true,
       },
     },
@@ -129,8 +129,5 @@ export default defineConfig({
     modules: {
       localsConvention: "camelCaseOnly",
     },
-  },
-  define: {
-    'process.env': {}
   },
 });

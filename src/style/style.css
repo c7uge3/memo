@@ -1,18 +1,23 @@
 /**
  * version: 1.0
- * author: c7uge3
- * createTime: *
- * updateTime: *
+ * author: Chio
+ * createTime: 2024-10-20
+ * updateTime: 2024-10-20
  */
 
 @charset 'utf-8';
 
 * {
+  font-display: swap;
   font-family:"PingFang SC", Helvetica, Arial, sans-serif;
   outline: none;
 }
-body {
+html, body, #root {
   height: 100%;
+  margin: 0;
+  padding: 0;
+}
+body {
   overflow: hidden;
   background: #fafafa;
   min-width: 320px; /* 添加最小宽度 */
@@ -26,14 +31,34 @@ a {
   margin: 0 auto;
   min-width: 320px; /* 添加最小宽度 */
   max-width: 880px;
+  min-height: 100vh;
+  width: 100%;
   height: 100%;
   flex-direction: row;
   flex: 1;
   flex-basis: auto;
   box-sizing: border-box;
 }
+.loading-container {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+}
 
-/** SiderBar */
+/** scrollbar */
+::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  border-radius: 100px !important;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent !important;
+}
 .side-div {
   transition: all 0.3s ease;
   position: relative;
@@ -61,7 +86,7 @@ a {
   cursor: pointer;
 }
 .nickname-span .pro-label {
-  padding: 2px 4px;
+  padding: 1px 4px;
   display: inline-block;
   position: relative;
   bottom: 2px;
@@ -71,6 +96,7 @@ a {
   color: white;
   font-size: 12px;
 }
+/** side */
 .side-div .sideStat-div {
   color: #5f5f5f;
   font-weight: bold;
@@ -174,8 +200,170 @@ ul.tag-ul li.tag-li svg {
   right: 10px;
   color: grey;
 }
+.logout-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px;
+  color: #ffffff;
+  transition: transform 0.2s ease;
+}
 
-/** Content */
+.logout-button:hover {
+  transform: scale(1.1);
+}
+
+.logout-button:active {
+  transform: scale(0.95);
+}
+.activity-heatmap {
+  position: relative;
+  display: flex;
+  gap: 3px;
+  padding: 10px;
+  background-color: #f6f8fa;
+  border-radius: 6px;
+}
+
+.activity-heatmap .week {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.activity-heatmap .day {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.activity-heatmap .day:hover {
+  transform: scale(1.2);
+}
+
+.heatmap-popup {
+  position: fixed;  /* 改为 fixed 定位 */
+  background-color: #333;
+  color: #fff;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 1001;  /* 确保 z-index 高于其他元素 */
+  pointer-events: none;
+  opacity: .8;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);  /* 添加阴影效果 */
+}
+
+.heatmap-popup::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 0 5px 5px;
+  border-style: solid;
+  border-color: transparent transparent #333;
+}
+
+.popup-date {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.popup-count {
+  opacity: 0.8;
+}
+
+/** 收放侧边栏 */
+.side-div.collapsed {
+width: 60px;
+}
+
+.toggle-btn {
+position: absolute;
+top: 20px;
+right: -12px;
+width: 24px;
+height: 24px;
+background-color: #ffffff;
+color: #637dff;
+display: flex;
+justify-content: center;
+align-items: center;
+cursor: pointer;
+border-radius: 50%;
+z-index: 1000;
+box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+transition: all 0.3s ease;
+border: 2px solid #637dff;
+font-size: 14px;
+}
+
+.toggle-btn:hover {
+background-color: #637dff;
+color: #ffffff;
+}
+
+.side-div.collapsed .toggle-btn {
+right: -12px;
+transform: rotate(180deg);
+}
+
+@media (max-width: 768px) {
+.wrapper-div {
+  flex-direction: column;
+  min-width: 320px; /* 确保在移动设备上也保持最小宽度 */
+}
+
+.side-div {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.side-div.collapsed {
+  height: 50px;
+}
+
+.toggle-btn {
+  top: 20px;
+  right: 12px;
+}
+
+.side-div.collapsed .toggle-btn {
+  top: 20px;
+  right: -20px;
+}
+
+.content-div {
+  margin-left: 0;
+  margin-top: 20px;
+}
+}
+
+@keyframes pulse {
+0% { transform: scale(1); }
+50% { transform: scale(1.1); }
+100% { transform: scale(1); }
+}
+
+.toggle-btn:active {
+animation: pulse 0.3s ease-in-out;
+}
+
+.fade-in {
+animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+from { opacity: 0; }
+to { opacity: 1; }
+}
+
+/** content */
 .content-div {
   display: block;
   flex: 1;
@@ -286,7 +474,46 @@ span.ipt-span svg.fa-clear {
   cursor: pointer;
 }
 
-/** Content memo */
+/** 搜索框 */
+.fa-search{ position: absolute; top:12px; left:6px;}
+.fa-clear{ position: absolute; top:12px; right:6px; cursor: pointer;}
+
+/** Quill */
+.quill {
+  max-height: 574px;
+  background-color: #ffffff;
+  overflow-y: auto;
+}
+.ql-toolbar.ql-snow,
+.ql-container.ql-snow {
+  color: #323232;
+  border: 2px solid #e8e8e8;
+}
+.ql-toolbar.ql-snow {
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+}
+.ql-container.ql-snow {
+  border-radius: 0 0 8px 8px;
+}
+.ql-editor.ql-blank::before {
+  font-style: inherit;
+}
+.ql-snow .ql-stroke {
+  stroke: #7d7d7d;
+}
+.ql-toolbar.ql-snow, .ql-container.ql-snow {
+  border: 2px solid #e8e8e8 !important;
+}
+
+.ql-toolbar.ql-snow {
+  border-bottom: 0 !important;
+}
+.ql-container.ql-snow {
+  border-top: 1px solid #e8e8e8 !important;
+}
+
+/** memo */
 .memoCard-div {
   margin-top: 10px;
 }
@@ -372,199 +599,6 @@ span.ipt-span svg.fa-clear {
   color: #323232;
   font-size: 14px;
 }
-
-/** quill reset */
-.quill {
-  max-height: 574px;
-  background-color: #ffffff;
-  overflow-y: auto;
-}
-.ql-toolbar.ql-snow,
-.ql-container.ql-snow {
-  color: #323232;
-  border: 2px solid #e8e8e8;
-}
-.ql-toolbar.ql-snow {
-  border-bottom: 0;
-  border-radius: 8px 8px 0 0;
-}
-.ql-container.ql-snow {
-  border-radius: 0 0 8px 8px;
-}
-.ql-editor.ql-blank::before {
-  font-style: inherit;
-}
-.ql-snow .ql-stroke {
-  stroke: #7d7d7d;
-}
-
-/** scrollbar */
-::-webkit-scrollbar {
-  width: 0 !important;
-  height: 0 !important;
-}
-::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.3) !important;
-  border-radius: 100px !important;
-}
-::-webkit-scrollbar-track {
-  background-color: transparent !important;
-}
-
-/** 搜索框 */
-.fa-search{ position: absolute; top:12px; left:6px;}
-.fa-clear{ position: absolute; top:12px; right:6px; cursor: pointer;}
-
-/** 标签 */
-.tag-input-container {
-  margin-top: 10px;
-}
-
-.tag-input-container input {
-  width: 100%;
-  padding: 5px;
-  margin-bottom: 5px;
-}
-
-.tags-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.search-container {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 20px;
-}
-
-.tag-manager {
-  margin-top: 10px;
-}
-
-.tag-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.tag {
-  background-color: #e0e0e0;
-  padding: 2px 5px;
-  border-radius: 3px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.tag:hover {
-  background-color: #d0d0d0;
-}
-
-.tag button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-left: 5px;
-}
-
-.ql-toolbar.ql-snow, .ql-container.ql-snow {
-  border: 2px solid #e8e8e8 !important;
-}
-
-.ql-toolbar.ql-snow {
-  border-bottom: 0 !important;
-}
-.ql-container.ql-snow {
-  border-top: 1px solid #e8e8e8 !important;
-}
-
-/** 收放侧边栏 */
-.side-div.collapsed {
-  width: 60px;
-}
-
-.toggle-btn {
-  position: absolute;
-  top: 20px;
-  right: -12px;
-  width: 24px;
-  height: 24px;
-  background-color: #ffffff;
-  color: #637dff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  border-radius: 50%;
-  z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  transition: all 0.3s ease;
-  border: 2px solid #637dff;
-  font-size: 14px;
-}
-
-.toggle-btn:hover {
-  background-color: #637dff;
-  color: #ffffff;
-}
-
-.side-div.collapsed .toggle-btn {
-  right: -12px;
-  transform: rotate(180deg);
-}
-
-@media (max-width: 768px) {
-  .wrapper-div {
-    flex-direction: column;
-    min-width: 320px; /* 确保在移动设备上也保持最小宽度 */
-  }
-
-  .side-div {
-    width: 100%;
-    height: auto;
-    overflow: visible;
-  }
-
-  .side-div.collapsed {
-    height: 50px;
-  }
-
-  .toggle-btn {
-    top: 20px;
-    right: 12px;
-  }
-
-  .side-div.collapsed .toggle-btn {
-    top: 20px;
-    right: -20px;
-  }
-
-  .content-div {
-    margin-left: 0;
-    margin-top: 20px;
-  }
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
-
-.toggle-btn:active {
-  animation: pulse 0.3s ease-in-out;
-}
-
-.fade-in {
-  animation: fadeIn 0.3s ease-in;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .edit-buttons {
   display: flex;
   justify-content: flex-end;

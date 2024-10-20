@@ -1,16 +1,23 @@
 import { useState, useEffect } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
 
 function useCounter() {
-  const [count, setCount] = useState<number>(
-    parseInt(localStorage.getItem("count") || "0")
-  );
+  const { user } = useAuth0();
+  const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
-    localStorage.setItem("count", count.toString());
-  }, [count]);
+    if (user?.sub) {
+      const storedCount = localStorage.getItem(`count_${user.sub}`);
+      setCount(storedCount ? parseInt(storedCount, 10) : 0);
+    }
+  }, [user]);
 
   const increment = () => {
-    setCount(count + 1);
+    if (user?.sub) {
+      const newCount = count + 1;
+      setCount(newCount);
+      localStorage.setItem(`count_${user.sub}`, newCount.toString());
+    }
   };
 
   return { count, increment };
