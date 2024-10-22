@@ -6,7 +6,7 @@ import { searchValueAtom } from "./atoms";
  * 搜索组件，用于搜索 memo
  * @returns 搜索组件
  */
-function Search() {
+const MemoSearch: React.FC = () => {
   const [inputValue, setInputValue] = useState(""); // 输入值
   const setSearchValue = useSetAtom(searchValueAtom); // Jotai 设置搜索值
   const [, startTransition] = useTransition();
@@ -49,6 +49,6 @@ function Search() {
       )}
     </span>
   );
-}
+};
 
-export default Search;
+export default MemoSearch;

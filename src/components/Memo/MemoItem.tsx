@@ -20,6 +20,7 @@ import { searchValueAtom } from "./atoms";
 import { toast } from "react-toastify";
 import { modules, formats } from "../../util/quillConfig";
 import Loading from "../Common/loading";
+import debounce from "../../util/debounce";
 
 const LazyReactQuill = lazy(() => import("./LazyReactQuill"));
 
@@ -61,48 +62,51 @@ const MemoItem: React.FC<MemoItemProps> = ({
     setEditedMessage(message);
   }, [_id, message]);
 
-  const handleSave = useCallback(async () => {
-    try {
-      const { data } = await axios.patch(API_UPDATE_MEMO, {
-        _id,
-        message: editedMessage,
-        userId: user?.sub,
-      });
-      if (data.success) {
-        toast.success("更新成功", toastObj);
-        mutate([API_GET_MEMO, searchValue, user?.sub]);
-      } else {
-        toast.error("更新失败", toastObj);
-      }
-    } catch (e) {
-      console.error("Error updating memo:", e);
-      toast.error(`🦄 更新失败: ${e}`, toastObj);
-    }
-    setEditingId(null);
-  }, [_id, editedMessage, toastObj, searchValue, user]);
-
   const handleCancel = useCallback(() => {
     setEditedMessage(message);
     setEditingId(null);
   }, [message]);
 
-  const deleteMemo = useCallback(async () => {
-    try {
-      const { data } = await axios.delete(`${API_DELETE_MEMO}/${_id}`, {
-        params: { userId: user?.sub },
-      });
-      if (data.success) {
-        toast.success("删除成功", toastObj);
-        updateMemoCount(-1);
-        mutate([API_GET_MEMO, searchValue, user?.sub]);
-      } else {
-        toast.error("删除失败", toastObj);
+  const debouncedDeleteMemo = useCallback(
+    debounce(async () => {
+      try {
+        const { data } = await axios.delete(`${API_DELETE_MEMO}/${_id}`, {
+          params: { userId: user?.sub },
+        });
+        if (data.success) {
+          toast.success("删除成功", toastObj);
+          updateMemoCount(-1);
+          mutate([API_GET_MEMO, searchValue, user?.sub]);
+        } else {
+          toast.error("删除失败", toastObj);
+        }
+      } catch (e) {
+        toast.error(`🦄 删除失败: ${e}`, toastObj);
       }
-    } catch (e) {
-      console.error("Error deleting memo:", e);
-      toast.error(`🦄 删除失败: ${e}`, toastObj);
-    }
-  }, [_id, toastObj, searchValue, user, updateMemoCount]);
+    }, 300),
+    []
+  );
+
+  const debouncedHandleSave = useCallback(() => {
+    debounce(async () => {
+      try {
+        const { data } = await axios.patch(API_UPDATE_MEMO, {
+          _id,
+          message: editedMessage,
+          userId: user?.sub,
+        });
+        if (data.success) {
+          toast.success("更新成功", toastObj);
+          mutate([API_GET_MEMO, searchValue, user?.sub]);
+        } else {
+          toast.error("更新失败", toastObj);
+        }
+      } catch (e) {
+        toast.error(`🦄 更新失败: ${e}`, toastObj);
+      }
+      setEditingId(null);
+    }, 300);
+  }, []);
 
   useEffect(() => {
     if (isEditing) {
@@ -114,46 +118,47 @@ const MemoItem: React.FC<MemoItemProps> = ({
     <li
       className='memoCard-li'
       onMouseEnter={() => isNeedOperate("Y", index)}
-      onMouseLeave={() => isNeedOperate("n", index)}
-      onDoubleClick={handleEdit}>
+      onMouseLeave={() => isNeedOperate("n", index)}>
       <label className='memoTime-label'>{createdAt}</label>
       {canOperate && !isEditing && (
         <div className='operate-buttons'>
           <span className='operate-label edit' onClick={handleEdit}>
             ✎
           </span>
-          <span className='operate-label delete' onClick={deleteMemo}>
+          <span className='operate-label delete' onClick={debouncedDeleteMemo}>
             ✖
           </span>
         </div>
       )}
-      {isEditing ? (
-        <div className='memoCard-div editing'>
-          <Suspense fallback={<Loading spinning={false} />}>
-            <LazyReactQuill
-              value={editedMessage}
-              modules={modules}
-              formats={formats}
-              ref={quillRef}
-              placeholder='请输入内容'
-              onChange={setEditedMessage}
-            />
-          </Suspense>
-          <div className='edit-buttons'>
-            <button className='btn btn-save' onClick={handleSave}>
-              保存
-            </button>
-            <button className='btn btn-cancel' onClick={handleCancel}>
-              取消
-            </button>
+      <div onDoubleClick={handleEdit}>
+        {isEditing ? (
+          <div className='memoCard-div editing'>
+            <Suspense fallback={<Loading spinning={false} />}>
+              <LazyReactQuill
+                value={editedMessage}
+                modules={modules}
+                formats={formats}
+                ref={quillRef}
+                placeholder='请输入内容'
+                onChange={setEditedMessage}
+              />
+            </Suspense>
+            <div className='edit-buttons'>
+              <button className='btn btn-save' onClick={debouncedHandleSave}>
+                保存
+              </button>
+              <button className='btn btn-cancel' onClick={handleCancel}>
+                取消
+              </button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div
-          className='memoCard-div'
-          dangerouslySetInnerHTML={{ __html: message }}
-        />
-      )}
+        ) : (
+          <div
+            className='memoCard-div'
+            dangerouslySetInnerHTML={{ __html: message }}
+          />
+        )}
+      </div>
     </li>
   );
 };

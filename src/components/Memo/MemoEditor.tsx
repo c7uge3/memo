@@ -24,7 +24,9 @@ const LazyReactQuill = lazy(() => import("./LazyReactQuill")); // 懒加载 Reac
  * @param props（editorHeight 是父组件传递的回调函数，用于设置编辑器的高度）
  * @returns 编辑器组件
  */
-function Editor(props: { editorHeight: (editorHeight: number) => void }) {
+const MemoEditor: React.FC<{
+  editorHeight: (editorHeight: number) => void;
+}> = ({ editorHeight }) => {
   const { user, isAuthenticated } = useAuth0();
   const quillRef = useRef<any>(null);
   const fixedRef = useRef<{ clientHeight: number }>({ clientHeight: 0 });
@@ -49,7 +51,7 @@ function Editor(props: { editorHeight: (editorHeight: number) => void }) {
     const msgRole: boolean | "" = message && message !== defaultMessage;
     setMessage(message); // 对 quill 做了双向数据绑定
     setSendBtnClass(msgRole ? "send-btn send-btn-enable" : "send-btn"); // 对 quill 做了双向数据绑定
-    props.editorHeight(fixedHeight); // 调用父组件的方法，并传递参数
+    editorHeight(fixedHeight); // 调用父组件的方法，并传递参数
   }, []); // 确保在组件重新渲染时，不会重复创建新的函数
 
   // 发送 message
@@ -126,6 +128,6 @@ function Editor(props: { editorHeight: (editorHeight: number) => void }) {
       </figure>
     </div>
   );
-}
+};
 
-export default memo(Editor);
+export default memo(MemoEditor);

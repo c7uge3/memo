@@ -29,7 +29,7 @@ interface ListProps {
   listHeight: number;
 }
 
-function List({ listHeight }: ListProps) {
+const MemoList: React.FC<ListProps> = ({ listHeight }) => {
   const [searchValue] = useAtom(searchValueAtom);
   const [operateFlag, setOperateFlag] = useState<boolean>(false);
   const [crtKey, setCrtKey] = useState<number | undefined>(undefined);
@@ -131,6 +131,6 @@ function List({ listHeight }: ListProps) {
       )}
     </>
   );
-}
+};
 
-export default memo(List);
+export default memo(MemoList);
