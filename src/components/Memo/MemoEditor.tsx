@@ -17,7 +17,7 @@ import { toast, Zoom } from "react-toastify";
 import { useAuth0 } from "@auth0/auth0-react";
 import Loading from "../Common/loading";
 
-const LazyReactQuill = lazy(() => import("./LazyReactQuill")); // 懒加载 ReactQuill
+const LazyReactQuill = lazy(() => import("../Common/LazyReactQuill")); // 懒加载 ReactQuill
 
 /**
  * 编辑器组件，用于输入和发送 memo

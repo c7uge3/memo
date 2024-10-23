@@ -22,7 +22,7 @@ import { modules, formats } from "../../util/quillConfig";
 import Loading from "../Common/loading";
 import debounce from "../../util/debounce";
 
-const LazyReactQuill = lazy(() => import("./LazyReactQuill"));
+const LazyReactQuill = lazy(() => import("../Common/LazyReactQuill"));
 
 interface MemoItemProps {
   item: {
