@@ -1,7 +1,7 @@
 import React, { memo, useState, useCallback, useMemo } from "react";
 import moment from "moment";
 import { useAtom } from "jotai";
-import { memoDataAtom, selectedDateAtom } from "../Memo/atoms";
+import { memoDataAtom, selectedDateAtom } from "../../util/atoms";
 
 // 热力图数据类型
 export interface ActivityData {
@@ -109,12 +109,9 @@ const Heatmap: React.FC<HeatmapProps> = ({ data }) => {
   //   [activityData]
   // );
 
-  const handleDayClick = useCallback(
-    (day: ActivityData) => {
-      setSelectedDate(day.date);
-    },
-    [setSelectedDate]
-  );
+  const handleDayClick = useCallback((day: ActivityData) => {
+    setSelectedDate(day.date);
+  }, []);
 
   return (
     <>

@@ -67,31 +67,27 @@ const MemoEditor: React.FC<{
    * @param {*} message
    * @returns 新增 memo 后的结果
    */
-  const putMemo = useCallback(
-    async (message: string) => {
-      if (!isAuthenticated || !user) {
-        toast.error("请先登录", toastObj);
-        return;
-      }
+  const putMemo = useCallback(async (message: string) => {
+    if (!isAuthenticated || !user) {
+      toast.error("请先登录", toastObj);
+      return;
+    }
 
-      try {
-        const userId = user.sub;
-        const response = await axios.post(API_PUT_MEMO, { message, userId });
-        const { success } = response.data;
+    try {
+      const userId = user.sub;
+      const response = await axios.post(API_PUT_MEMO, { message, userId });
+      const { success } = response.data;
 
-        if (success) {
-          mutate([API_GET_MEMO, "", userId]); // 重新获取 memo 列表
-          toast.success("发送成功", toastObj);
-        } else {
-          toast.error("发送失败", toastObj);
-        }
-      } catch (error) {
-        console.error("Error sending memo:", error);
+      if (success) {
+        mutate([API_GET_MEMO, "", userId]); // 重新获取 memo 列表
+        toast.success("发送成功", toastObj);
+      } else {
         toast.error("发送失败", toastObj);
       }
-    },
-    [isAuthenticated, user, toastObj]
-  );
+    } catch (error) {
+      toast.error("发送失败", toastObj);
+    }
+  }, []);
 
   useEffect(() => {
     quillRef.current?.focus();

@@ -14,7 +14,7 @@ import {
   memoCountAtom,
   memoDataAtom,
   selectedDateAtom,
-} from "./atoms";
+} from "../../util/atoms";
 
 import "../Common/emptyBox/style/index.less";
 import "../Common/loading/style/index.less";
@@ -76,18 +76,13 @@ const MemoList: React.FC<ListProps> = ({ listHeight }) => {
     setCrtKey(key);
   }, []);
 
-  const updateMemoCount = useCallback(
-    (change: number) => {
-      setMemoCount((prevCount) => prevCount + change);
-    },
-    [setMemoCount]
-  );
+  const updateMemoCount = useCallback((change: number) => {
+    setMemoCount((prevCount) => prevCount + change);
+  }, []);
 
   useEffect(() => {
-    if (listData) {
-      setMemoCount(listData.length);
-    }
-  }, [listData, searchValue, setMemoCount]);
+    if (listData) setMemoCount(listData.length);
+  }, [listData, searchValue]);
 
   const [selectedDate] = useAtom(selectedDateAtom);
 

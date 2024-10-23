@@ -1,6 +1,6 @@
 import React, { useState, useTransition } from "react";
 import { useSetAtom } from "jotai";
-import { searchValueAtom } from "./atoms";
+import { searchValueAtom } from "../../util/atoms";
 
 /**
  * 搜索组件，用于搜索 memo

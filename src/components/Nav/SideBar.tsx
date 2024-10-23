@@ -3,19 +3,16 @@ import React, {
   SetStateAction,
   useState,
   useEffect,
-  Suspense,
   memo,
 } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAtom } from "jotai";
 import { useAuth0 } from "@auth0/auth0-react";
-import { memoCountAtom, memoDataAtom } from "../Memo/atoms";
+import { memoCountAtom, memoDataAtom } from "../../util/atoms";
 import Heatmap from "./Heatmap";
 import moment from "moment-timezone";
 import useDeviceType from "../Hook/useDeviceType";
 import LogoutButton from "../Auth/LogoutButton";
-import Loading from "../Common/loading";
-import { log } from "console";
 
 interface SideBarProps {
   isCollapsed: boolean;

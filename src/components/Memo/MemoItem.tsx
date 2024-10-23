@@ -16,7 +16,7 @@ import axios from "axios";
 import { useAtom } from "jotai";
 import { mutate } from "swr";
 import { useAuth0 } from "@auth0/auth0-react";
-import { searchValueAtom } from "./atoms";
+import { searchValueAtom } from "../../util/atoms";
 import { toast } from "react-toastify";
 import { modules, formats } from "../../util/quillConfig";
 import Loading from "../Common/loading";
@@ -34,7 +34,7 @@ interface MemoItemProps {
   operateFlag: boolean;
   crtKey: number | undefined;
   isNeedOperate: (flag: string, key: number) => void;
-  toastObj: {};
+  toastObj: { transition: any; autoClose: number };
   updateMemoCount: (count: number) => void;
 }
 
@@ -60,12 +60,12 @@ const MemoItem: React.FC<MemoItemProps> = ({
   const handleEdit = useCallback(() => {
     setEditingId(_id);
     setEditedMessage(message);
-  }, [_id, message]);
+  }, []);
 
   const handleCancel = useCallback(() => {
     setEditedMessage(message);
     setEditingId(null);
-  }, [message]);
+  }, []);
 
   const debouncedDeleteMemo = useCallback(
     debounce(async () => {
@@ -84,10 +84,10 @@ const MemoItem: React.FC<MemoItemProps> = ({
         toast.error(`🦄 删除失败: ${e}`, toastObj);
       }
     }, 300),
-    []
+    [_id]
   );
 
-  const debouncedHandleSave = useCallback(() => {
+  const debouncedHandleSave = useCallback(
     debounce(async () => {
       try {
         const { data } = await axios.patch(API_UPDATE_MEMO, {
@@ -105,13 +105,12 @@ const MemoItem: React.FC<MemoItemProps> = ({
         toast.error(`🦄 更新失败: ${e}`, toastObj);
       }
       setEditingId(null);
-    }, 300);
-  }, []);
+    }, 300),
+    [_id, editedMessage]
+  );
 
   useEffect(() => {
-    if (isEditing) {
-      setEditedMessage(message);
-    }
+    if (isEditing) setEditedMessage(message);
   }, [isEditing, message]);
 
   return (
