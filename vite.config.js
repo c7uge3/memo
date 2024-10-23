@@ -111,6 +111,7 @@ export default defineConfig({
           utils: ["jotai", "swr", "axios"],
         },
       },
+      external: ["date-fns-tz/esm/index.js"],
     },
     reportCompressedSize: false,
     emptyOutDir: true,

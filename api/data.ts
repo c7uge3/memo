@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz/esm/index.js';
+import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
 import { format, parse } from 'date-fns';
 
 const TIMEZONE = 'Asia/Shanghai';
