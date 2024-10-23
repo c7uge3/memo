@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
+import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz/esm/index.js';
 import { format, parse } from 'date-fns';
 
 const TIMEZONE = 'Asia/Shanghai';
@@ -10,7 +10,7 @@ const DataSchema = new mongoose.Schema(
     message: String,
     createdAt: {
       type: Date,
-      default: () => zonedTimeToUtc(new Date(), TIMEZONE),
+      default: () => new Date(),
       get: (date: Date) =>
         format(utcToZonedTime(date, TIMEZONE), "yyyy-MM-dd HH:mm:ss"),
       set: (dateString: string) =>
