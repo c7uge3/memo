@@ -10,7 +10,8 @@ import { useAtom } from "jotai";
 import { useAuth0 } from "@auth0/auth0-react";
 import { memoCountAtom, memoDataAtom } from "../../util/atoms";
 import Heatmap from "./Heatmap";
-import moment from "moment-timezone";
+import { toZonedTime } from 'date-fns-tz';
+import { subMonths, startOfDay, endOfDay, addDays, format, parseISO, isAfter, isBefore, isEqual } from 'date-fns';
 import useDeviceType from "../Hook/useDeviceType";
 import LogoutButton from "../Auth/LogoutButton";
 
@@ -18,6 +19,8 @@ interface SideBarProps {
   isCollapsed: boolean;
   setIsCollapsed: Dispatch<SetStateAction<boolean>>;
 }
+
+const TIMEZONE = 'Asia/Shanghai';
 
 const SideBar: React.FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
   const [memoCount] = useAtom(memoCountAtom);
@@ -30,23 +33,19 @@ const SideBar: React.FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
   useEffect(() => {
     if (memoData.length > 0) {
       const activityMap = new Map();
-      const endDate = moment().tz("Asia/Shanghai").endOf("day");
-      const startDate = moment()
-        .tz("Asia/Shanghai")
-        .subtract(3, "months")
-        .startOf("day");
+      const now = new Date();
+      const endDate = endOfDay(toZonedTime(now, TIMEZONE));
+      let startDate = startOfDay(toZonedTime(subMonths(now, 3), TIMEZONE));
 
-      while (startDate.isSameOrBefore(endDate)) {
-        activityMap.set(startDate.format("YYYY-MM-DD"), 0);
-        startDate.add(1, "day");
+      while (isBefore(startDate, endDate) || isEqual(startDate, endDate)) {
+        activityMap.set(format(startDate, 'yyyy-MM-dd'), 0);
+        startDate = addDays(startDate, 1);
       }
 
       memoData.forEach((item) => {
-        const itemDate = moment(item.createdAt).tz("Asia/Shanghai");
-        if (
-          itemDate.isAfter(moment().tz("Asia/Shanghai").subtract(3, "months"))
-        ) {
-          const date = itemDate.format("YYYY-MM-DD");
+        const itemDate = toZonedTime(parseISO(item.createdAt), TIMEZONE);
+        if (isAfter(itemDate, toZonedTime(subMonths(now, 3), TIMEZONE))) {
+          const date = format(itemDate, 'yyyy-MM-dd');
           activityMap.set(date, (activityMap.get(date) || 0) + 1);
         }
       });

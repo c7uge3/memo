@@ -1,5 +1,14 @@
 import React, { memo, useState, useCallback, useMemo } from "react";
-import moment from "moment";
+import {
+  format,
+  subMonths,
+  startOfWeek,
+  addDays,
+  isSameDay,
+  isAfter,
+  isBefore,
+  parseISO,
+} from "date-fns";
 import { useAtom } from "jotai";
 import { memoDataAtom, selectedDateAtom } from "../../util/atoms";
 
@@ -29,7 +38,7 @@ const Popup: React.FC<PopupProps> = memo(({ date, count, position }) => (
       left: `${position.x - 36}px`,
       top: `${position.y + 6}px`,
     }}>
-    <div className='popup-date'>{moment(date).format("YYYY-MM-DD")}</div>
+    <div className='popup-date'>{format(parseISO(date), "yyyy-MM-dd")}</div>
     <div className='popup-count'>{count} 条笔记</div>
   </div>
 ));
@@ -71,7 +80,7 @@ const Heatmap: React.FC<HeatmapProps> = ({ data }) => {
   const activityData = useMemo(() => {
     const dataMap = new Map<string, number>();
     memoData.forEach((memo) => {
-      const date = moment(memo.createdAt).format("YYYY-MM-DD");
+      const date = format(parseISO(memo.createdAt), "yyyy-MM-dd");
       dataMap.set(date, (dataMap.get(date) || 0) + 1);
     });
     return Array.from(dataMap, ([date, count]) => ({ date, count }));
@@ -81,33 +90,29 @@ const Heatmap: React.FC<HeatmapProps> = ({ data }) => {
   const weeks = useMemo(() => {
     const result = []; // 最终结果
     let currentWeek = []; // 当前周的数据
-    const startDate = moment().subtract(3, "months").startOf("week"); // 从当前日期开始，往前推3个月，并设置为周的开始日期
-    const endDate = moment(); // 结束日期为当前日期
+    let startDate = startOfWeek(subMonths(new Date(), 3)); // 从当前日期开始，往前推3个月，并设置为周的开始日期
+    const endDate = new Date(); // 结束日期为当前日期
 
-    // 当开始日期小于等于结束日期时，遍历每一天的数据
-    while (startDate.isSameOrBefore(endDate)) {
-      const dayData = activityData.find(
-        (d) => d.date === startDate.format("YYYY-MM-DD")
-      ) || { date: startDate.format("YYYY-MM-DD"), count: 0 };
+    // 当开始日期不晚于结束日期时，遍历每一天的数据
+    while (!isAfter(startDate, endDate)) {
+      const formattedDate = format(startDate, "yyyy-MM-dd");
+      const dayData = activityData.find((d) => d.date === formattedDate) || {
+        date: formattedDate,
+        count: 0,
+      };
       currentWeek.push(dayData); // 将当前天的数据添加到当前周
 
       // 如果当前周的数据满了7天，或者已经遍历到结束日期，则将当前周的数据添加到结果中，并重置 currentWeek
-      if (currentWeek.length === 7 || startDate.isSame(endDate, "day")) {
+      if (currentWeek.length === 7 || isSameDay(startDate, endDate)) {
         result.push(currentWeek);
         currentWeek = [];
       }
 
-      startDate.add(1, "day"); // 移动到下一天
+      startDate = addDays(startDate, 1); // 移动到下一天
     }
 
     return result;
   }, [activityData]);
-
-  // 使用 activityData 计算 maxCount
-  // const maxCount = useMemo(
-  //   () => Math.max(...activityData.map((d) => d.count)),
-  //   [activityData]
-  // );
 
   const handleDayClick = useCallback((day: ActivityData) => {
     setSelectedDate(day.date);

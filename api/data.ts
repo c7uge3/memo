@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
-import moment from "moment-timezone";
+import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
+import { format, parse } from 'date-fns';
+
+const TIMEZONE = 'Asia/Shanghai';
 
 const DataSchema = new mongoose.Schema(
   {
@@ -7,11 +10,11 @@ const DataSchema = new mongoose.Schema(
     message: String,
     createdAt: {
       type: Date,
-      default: () => moment().tz("Asia/Shanghai").toDate(),
+      default: () => zonedTimeToUtc(new Date(), TIMEZONE),
       get: (date: Date) =>
-        moment(date).tz("Asia/Shanghai").format("YYYY-MM-DD HH:mm:ss"),
-      set: (date: string) =>
-        moment(date, "YYYY-MM-DD HH:mm:ss").tz("Asia/Shanghai").toDate(),
+        format(utcToZonedTime(date, TIMEZONE), "yyyy-MM-dd HH:mm:ss"),
+      set: (dateString: string) =>
+        zonedTimeToUtc(parse(dateString, "yyyy-MM-dd HH:mm:ss", new Date()), TIMEZONE),
     },
   },
   {

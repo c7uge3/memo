@@ -4,7 +4,8 @@ import { Zoom } from "react-toastify";
 import useSWR from "swr";
 import axios from "axios";
 import { useAuth0 } from "@auth0/auth0-react";
-import moment from "moment-timezone";
+import { format, parseISO } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 import Empty from "../Common/emptyBox";
 import MemoItem from "./MemoItem";
@@ -28,6 +29,8 @@ interface MemoItem {
 interface ListProps {
   listHeight: number;
 }
+
+const TIMEZONE = 'Asia/Shanghai';
 
 const MemoList: React.FC<ListProps> = ({ listHeight }) => {
   const [searchValue] = useAtom(searchValueAtom);
@@ -91,8 +94,9 @@ const MemoList: React.FC<ListProps> = ({ listHeight }) => {
       const matchesSearch = item.message
         .toLowerCase()
         .includes(searchValue.toLowerCase());
+      const itemDate = toZonedTime(parseISO(item.createdAt), TIMEZONE);
       const matchesDate = selectedDate
-        ? moment(item.createdAt).format("YYYY-MM-DD") === selectedDate
+        ? format(itemDate, "yyyy-MM-dd") === selectedDate
         : true;
       return matchesSearch && matchesDate;
     });
