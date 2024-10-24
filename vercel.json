@@ -3,10 +3,7 @@
   "builds": [
     {
       "src": "api/server.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["api/**"]
-      }
+      "use": "@vercel/node"
     },
     {
       "src": "package.json",
@@ -17,30 +14,11 @@
     }
   ],
   "routes": [
-    {
-      "src": "/manifest.webmanifest",
-      "headers": {
-        "Content-Type": "application/manifest+json"
-      }
-    },
-    {
-      "src": "/sw.js",
-      "headers": {
-        "Cache-Control": "public, max-age=0, must-revalidate",
-        "Content-Type": "application/javascript; charset=utf-8"
-      }
-    },
-    {
-      "src": "/workbox-(.+)\\.js",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable",
-        "Content-Type": "application/javascript; charset=utf-8"
-      }
-    },
-    { "src": "/api/(.*)", "dest": "api/server.ts" },
+    { "handle": "filesystem" },
+    { "src": "/api/(.*)", "dest": "/api/server.ts" },
     { "src": "/(.*)", "dest": "/index.html" }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "VITE_SERVER_URL": "http://localhost:3000"
   }
 }
