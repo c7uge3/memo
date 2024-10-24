@@ -2,6 +2,7 @@ import React, { FC, memo, useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useLocation, Outlet } from "react-router-dom";
 import Loading from "../Common/loading";
+import { log } from "console";
 
 const AuthWrapper: FC = memo(() => {
   const { isLoading, error, isAuthenticated, loginWithRedirect } = useAuth0();

@@ -7,9 +7,9 @@
   "scripts": {
     "start": "tsx ./api/server.ts",
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview",
-    "vercel-build": "vite build",
+    "vercel-build": "tsc && vite build",
     "vercel-dev": "vite build && (vite preview & tsx ./api/server.ts)"
   },
   "keywords": [
