@@ -56,6 +56,8 @@ export default defineConfig({
             },
           },
         ],
+        cleanupOutdatedCaches: true,
+        sourcemap: true,
       },
     }),
   ],
