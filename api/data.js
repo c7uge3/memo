@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-import { toZonedTime } from 'date-fns-tz';
-import { format, parse } from 'date-fns';
+import { toZonedTime } from "date-fns-tz";
+import { format, parse } from "date-fns";
 
-const TIMEZONE = 'Asia/Shanghai';
+const TIMEZONE = "Asia/Shanghai";
 
 const DataSchema = new mongoose.Schema(
   {
@@ -11,10 +11,12 @@ const DataSchema = new mongoose.Schema(
     createdAt: {
       type: Date,
       default: () => new Date(),
-      get: (date: Date) =>
-        format(toZonedTime(date, TIMEZONE), "yyyy-MM-dd HH:mm:ss"),
-      set: (dateString: string) =>
-        toZonedTime(parse(dateString, "yyyy-MM-dd HH:mm:ss", new Date()), TIMEZONE),
+      get: (date) => format(toZonedTime(date, TIMEZONE), "yyyy-MM-dd HH:mm:ss"),
+      set: (dateString) =>
+        toZonedTime(
+          parse(dateString, "yyyy-MM-dd HH:mm:ss", new Date()),
+          TIMEZONE
+        ),
     },
   },
   {

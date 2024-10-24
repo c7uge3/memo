@@ -9,7 +9,7 @@ import { cache } from "hono/cache";
 import { etag } from "hono/etag";
 import { validator } from "hono/validator";
 import mongoose from "mongoose";
-import Data from "./data";
+import Data from "./data.js";
 import dotenv from "dotenv";
 
 dotenv.config();
