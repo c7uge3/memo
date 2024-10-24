@@ -135,19 +135,38 @@ app.delete("/api/deleteMemo/:_id", async (c) => {
   }
 });
 
-// 服务器启动
-const port = process.env.PORT || 3001;
+// 添加请求头适配函数
+function adaptHeaders(rawHeaders: any): Headers {
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(rawHeaders)) {
+    if (typeof value === "string") {
+      headers.set(key, value);
+    }
+  }
+  return headers;
+}
+
+// 修改默认导出处理函数
+export default async function handler(request: Request, context: any) {
+  // 适配请求对象
+  if (request.headers && !request.headers.get) {
+    const adaptedRequest = new Request(request.url, {
+      method: request.method,
+      headers: adaptHeaders(request.headers),
+      body: request.body,
+    });
+    return app.fetch(adaptedRequest, context);
+  }
+
+  return app.fetch(request, context);
+}
 
 // 开发环境服务器启动
 if (process.env.NODE_ENV !== "production") {
+  const port = process.env.PORT || 3001;
   console.log(`Server is running on http://localhost:${port}`);
   serve({
     fetch: app.fetch,
     port: port as number,
   });
-}
-
-// 修改默认导出为函数
-export default async function handler(request: Request, context: any) {
-  return app.fetch(request, context);
 }
