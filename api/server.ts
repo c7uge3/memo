@@ -135,30 +135,79 @@ app.delete("/api/deleteMemo/:_id", async (c) => {
   }
 });
 
-// 添加请求头适配函数
+// 添加 URL 构建函数
+function getFullUrl(request: Request | any): string {
+  // 获取协议（默认为 https）
+  const protocol = request.headers["x-forwarded-proto"] || "https";
+  // 获取主机名
+  const host =
+    request.headers["x-forwarded-host"] ||
+    request.headers["host"] ||
+    "vercel.app";
+  // 获取原始 URL 路径和查询参数
+  const originalUrl = request.url || "";
+
+  // 如果已经是完整 URL，直接返回
+  if (originalUrl.startsWith("http")) {
+    return originalUrl;
+  }
+
+  // 构建完整 URL
+  return `${protocol}://${host}${originalUrl}`;
+}
+
+// 修改请求头适配函数
 function adaptHeaders(rawHeaders: any): Headers {
   const headers = new Headers();
-  for (const [key, value] of Object.entries(rawHeaders)) {
-    if (typeof value === "string") {
-      headers.set(key, value);
-    }
+  if (rawHeaders) {
+    Object.entries(rawHeaders).forEach(([key, value]) => {
+      if (typeof value === "string") {
+        headers.set(key, value);
+      } else if (Array.isArray(value)) {
+        value.forEach((v) => {
+          if (typeof v === "string") {
+            headers.append(key, v);
+          }
+        });
+      }
+    });
   }
   return headers;
 }
 
 // 修改默认导出处理函数
-export default async function handler(request: Request, context: any) {
-  // 适配请求对象
-  if (request.headers && !request.headers.get) {
-    const adaptedRequest = new Request(request.url, {
+export default async function handler(request: Request | any, context: any) {
+  try {
+    // 构建完整 URL
+    const fullUrl = getFullUrl(request);
+
+    // 创建适配的请求对象
+    const adaptedRequest = new Request(fullUrl, {
       method: request.method,
       headers: adaptHeaders(request.headers),
       body: request.body,
+      // 只在需要时添加以下选项
+      ...(request.body ? { duplex: "half" } : {}),
     });
-    return app.fetch(adaptedRequest, context);
-  }
 
-  return app.fetch(request, context);
+    return await app.fetch(adaptedRequest, context);
+  } catch (error) {
+    console.error("Request handling error:", error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Internal Server Error",
+        details:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
 }
 
 // 开发环境服务器启动
