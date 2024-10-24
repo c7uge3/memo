@@ -5,7 +5,6 @@ import { compress } from "hono/compress";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { secureHeaders } from "hono/secure-headers";
-import { cache } from "hono/cache";
 import { etag } from "hono/etag";
 import { validator } from "hono/validator";
 import mongoose from "mongoose";
@@ -37,26 +36,19 @@ const handleError = (c: Context, err: Error) => {
 };
 
 // 路由
-app.get(
-  "/api/getMemo",
-  cache({
-    cacheName: "memos-cache",
-    cacheControl: "max-age=60", // 缓存 60 秒
-  }),
-  async (c) => {
-    try {
-      const { message, userId } = c.req.query();
-      const keyWords = {
-        message: { $regex: message || "", $options: "i" },
-        userId: userId,
-      };
-      const data = await Data.find(keyWords).sort({ createdAt: -1 });
-      return c.json({ success: true, data });
-    } catch (err) {
-      return handleError(c, err as Error);
-    }
+app.get("/api/getMemo", async (c) => {
+  try {
+    const { message, userId } = c.req.query();
+    const keyWords = {
+      message: { $regex: message || "", $options: "i" },
+      userId: userId,
+    };
+    const data = await Data.find(keyWords).sort({ createdAt: -1 });
+    return c.json({ success: true, data });
+  } catch (err) {
+    return handleError(c, err as Error);
   }
-);
+});
 
 app.post(
   "/api/putMemo",
@@ -155,10 +147,7 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-// 为 Vercel 环境导出
-export default app;
-
-// Vercel 环境处理程序
-export const handler = async (request: Request, context: any) => {
+// 修改默认导出为函数
+export default async function handler(request: Request, context: any) {
   return app.fetch(request, context);
-};
+}
