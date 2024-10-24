@@ -131,4 +131,7 @@ export default defineConfig({
       localsConvention: "camelCaseOnly",
     },
   },
+  define: {
+    "process.env": {},
+  },
 });

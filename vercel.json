@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/server.mjs",
+      "src": "api/server.ts",
       "use": "@vercel/node"
     },
     {
@@ -15,7 +15,7 @@
   ],
   "routes": [
     { "handle": "filesystem" },
-    { "src": "/api/(.*)", "dest": "/api/server.mjs" },
+    { "src": "/api/(.*)", "dest": "/api/server.ts" },
     { "src": "/(.*)", "dest": "/index.html" }
   ],
   "env": {
