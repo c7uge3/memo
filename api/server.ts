@@ -154,4 +154,7 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-export default app;
+// 为 Vercel 环境导出
+export default {
+  fetch: app.fetch,
+};
