@@ -146,6 +146,7 @@ app.delete("/api/deleteMemo/:_id", async (c) => {
 // 服务器启动
 const port = process.env.PORT || 3001;
 
+// 开发环境服务器启动
 if (process.env.NODE_ENV !== "production") {
   console.log(`Server is running on http://localhost:${port}`);
   serve({
@@ -155,6 +156,9 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // 为 Vercel 环境导出
-export default {
-  fetch: app.fetch,
+export default app;
+
+// Vercel 环境处理程序
+export const handler = async (request: Request, context: any) => {
+  return app.fetch(request, context);
 };
