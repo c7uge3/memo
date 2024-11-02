@@ -10,14 +10,14 @@ Memo 是一个笔记应用，提供笔记的增删改查功能。
 
 ## 在线演示
 
-项目已部署至 [Vercel](https://memo-rosy.vercel.app/memo)
+项目已部署至 [Railway](https://memo.up.railway.app)
 
 ## 技术栈
 
 - 前端：React, TypeScript, Vite
 - 后端：Node.js, Hono
 - 数据库：MongoDB
-- 部署：Vercel
+- 部署：Railway
 
 ## 安装
 
