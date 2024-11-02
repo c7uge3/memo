@@ -53,11 +53,11 @@ Memo 是一个笔记应用，提供笔记的增删改查功能。
 
 ## 部署
 
-本项目使用 Vercel 进行部署。要部署您自己的版本：
+本项目使用 Railway 进行部署。要部署您自己的版本：
 
-1. 在 Vercel 上创建一个新项目。
+1. 在 Railway 上创建一个新项目。
 2. 连接您的 GitHub 仓库。
-3. 设置环境变量 `MONGODB_URI`。
+3. 设置环境变量 `MONGODB_URI=your_mongodb_connection_string`、`PORT=3000` 和 `NODE_ENV=production`。
 4. 部署。
 
 ## 许可证
