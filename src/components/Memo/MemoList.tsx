@@ -69,12 +69,6 @@ const MemoList: React.FC<ListProps> = ({ listHeight }) => {
             },
           });
 
-          if (response.data.metrics) {
-            console.log(
-              `API Response Time: ${response.data.metrics.duration}ms`
-            );
-          }
-
           if (!response.data.success) {
             throw new Error(response.data.message || "请求失败");
           }
