@@ -1,0 +1,11 @@
+node_modules
+dist
+dev-dist
+build
+
+.DS_Store
+.cache
+.vercel
+.vscode
+*.code-workspace
+.env
