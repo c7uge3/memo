@@ -290,10 +290,29 @@ app.delete("/api/deleteMemo/:_id", async (c) => {
   }
 });
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// 添加新的静态文件和路由处理
+app.use("*", async (c, next) => {
+  // 如果是 API 请求，继续下一个中间件
+  if (c.req.path.startsWith("/api/")) {
+    return next();
+  }
 
-// 添加静态文件服务
-app.use("/*", serveStatic({ root: "./dist" }));
+  try {
+    // 尝试提供静态文件
+    return await serveStatic({
+      root: "./dist",
+      rewriteRequestPath: (path) => {
+        return path === "/" ? "/index.html" : path;
+      },
+    })(c);
+  } catch {
+    // 如果找不到文件，返回 index.html
+    return serveStatic({
+      root: "./dist",
+      rewriteRequestPath: () => "/index.html",
+    })(c);
+  }
+});
 
 const port = process.env.PORT || 3001;
 

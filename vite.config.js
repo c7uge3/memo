@@ -41,6 +41,7 @@ export default defineConfig(({ mode }) => {
               },
             }
           : undefined,
+      historyApiFallback: true,
     },
     build: {
       minify: "terser",

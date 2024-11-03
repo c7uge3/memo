@@ -9,6 +9,15 @@ healthcheckTimeout = 100
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
+[[deploy.rules]]
+path = "/api/*"
+type = "proxy"
+
+[[deploy.rules]]
+path = "/*"
+type = "rewrite"
+destination = "/index.html"
+
 [deploy.envs]
 PORT = "3000"
 NODE_ENV = "production"
