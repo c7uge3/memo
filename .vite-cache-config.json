@@ -1,0 +1,13 @@
+{
+  "cacheDir": "node_modules/.vite",
+  "optimizeDeps": {
+    "disabled": false,
+    "force": false
+  },
+  "buildCache": {
+    "disabled": false,
+    "compression": true,
+    "dir": "node_modules/.vite/build-cache",
+    "clean": true
+  }
+}

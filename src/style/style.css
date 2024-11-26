@@ -679,3 +679,11 @@ span.ipt-span svg.fa-clear {
   background-color: #99ff99;
   transform: scale(1.1);
 }
+
+.memoCount-div .memoCount{
+  cursor: pointer;
+}
+
+.memoCount-div .memoCount:hover{
+  color: #637dff;
+}

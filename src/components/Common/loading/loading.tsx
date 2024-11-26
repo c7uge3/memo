@@ -1,4 +1,3 @@
-import React from "react";
 import type { LoadingProps } from "./interface";
 
 const Loading: React.FC<LoadingProps> = ({ spinning, indicator, tip }) => {

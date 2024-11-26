@@ -1,5 +1,4 @@
 // 源文件
-import React from "react";
 import PropTypes from "prop-types";
 import type { AlertProps, KindMap } from "./interface";
 

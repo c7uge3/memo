@@ -1,13 +1,4 @@
-import React, {
-  lazy,
-  Suspense,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useMemo,
-  memo,
-} from "react";
+import { lazy, Suspense, useState, useEffect, useRef, type FC } from "react";
 import Search from "./MemoSearch";
 import { modules, formats } from "../../util/quillConfig";
 import { mutate } from "swr";
@@ -24,7 +15,7 @@ const LazyReactQuill = lazy(() => import("../Common/LazyReactQuill")); // 懒加
  * @param props（editorHeight 是父组件传递的回调函数，用于设置编辑器的高度）
  * @returns 编辑器组件
  */
-const MemoEditor: React.FC<{
+const MemoEditor: FC<{
   editorHeight: (editorHeight: number) => void;
 }> = ({ editorHeight }) => {
   const { user, isAuthenticated } = useAuth0();
@@ -34,40 +25,37 @@ const MemoEditor: React.FC<{
   const [sendBtnClass, setSendBtnClass] = useState<string>("send-btn");
 
   // 缓存 toast 对象，避免重复创建
-  const toastObj = useMemo(
-    () => ({
-      transition: Zoom,
-      autoClose: 1000,
-    }),
-    []
-  );
+  const toastObj = {
+    transition: Zoom,
+    autoClose: 1000,
+  };
 
   // 编辑器默认值
   const defaultMessage = "<p><br></p>"; // quill 的默认值
 
   // 响应文本输入变更，并调用父组件的方法
-  const handleTxtChange = useCallback((message: string) => {
+  const handleTxtChange = (message: string) => {
     const fixedHeight: number = fixedRef.current.clientHeight;
     const msgRole: boolean | "" = message && message !== defaultMessage;
     setMessage(message); // 对 quill 做了双向数据绑定
     setSendBtnClass(msgRole ? "send-btn send-btn-enable" : "send-btn"); // 对 quill 做了双向数据绑定
     editorHeight(fixedHeight); // 调用父组件的方法，并传递参数
-  }, []); // 确保在组件重新渲染时，不会重复创建新的函数
+  };
 
   // 发送 message
-  const sendMessage = useCallback((message: string) => {
+  const sendMessage = (message: string) => {
     if (message && message !== defaultMessage) {
       putMemo(message);
       setMessage(""); // 发送后重置文本输入框内容
     }
-  }, []);
+  };
 
   /**
    * 新增 memo
    * @param {*} message
    * @returns 新增 memo 后的结果
    */
-  const putMemo = useCallback(async (message: string) => {
+  const putMemo = async (message: string) => {
     if (!isAuthenticated || !user) {
       toast.error("请先登录", toastObj);
       return;
@@ -87,7 +75,7 @@ const MemoEditor: React.FC<{
     } catch (error) {
       toast.error("发送失败", toastObj);
     }
-  }, []);
+  };
 
   useEffect(() => {
     quillRef.current?.focus();
@@ -126,4 +114,4 @@ const MemoEditor: React.FC<{
   );
 };
 
-export default memo(MemoEditor);
+export default MemoEditor;

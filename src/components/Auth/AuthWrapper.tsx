@@ -1,9 +1,9 @@
-import { type FC, memo, useState, useEffect } from "react";
+import { type FC, useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useLocation, Outlet } from "react-router-dom";
 import Loading from "../Common/loading";
 
-const AuthWrapper: FC = memo(() => {
+const AuthWrapper: FC = () => {
   const { isLoading, error, isAuthenticated, loginWithRedirect } = useAuth0();
   const location = useLocation();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -45,6 +45,6 @@ const AuthWrapper: FC = memo(() => {
   }
 
   return <Outlet />;
-});
+};
 
 export default AuthWrapper;

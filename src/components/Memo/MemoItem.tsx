@@ -1,12 +1,4 @@
-import React, {
-  useState,
-  useCallback,
-  useEffect,
-  useRef,
-  Suspense,
-  lazy,
-  memo,
-} from "react";
+import { useState, useEffect, useRef, Suspense, lazy } from "react";
 import {
   API_GET_MEMO,
   API_UPDATE_MEMO,
@@ -57,57 +49,51 @@ const MemoItem: React.FC<MemoItemProps> = ({
 
   const isEditing = editingId === _id;
 
-  const handleEdit = useCallback(() => {
+  const handleEdit = () => {
     setEditingId(_id);
     setEditedMessage(message);
-  }, []);
+  };
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = () => {
     setEditedMessage(message);
     setEditingId(null);
-  }, []);
+  };
 
-  const debouncedDeleteMemo = useCallback(
-    debounce(async () => {
-      try {
-        const { data } = await axios.delete(`${API_DELETE_MEMO}/${_id}`, {
-          params: { userId: user?.sub },
-        });
-        if (data.success) {
-          toast.success("删除成功", toastObj);
-          updateMemoCount(-1);
-          mutate([API_GET_MEMO, searchValue, user?.sub]);
-        } else {
-          toast.error("删除失败", toastObj);
-        }
-      } catch (e) {
-        toast.error(`🦄 删除失败: ${e}`, toastObj);
+  const debouncedDeleteMemo = debounce(async () => {
+    try {
+      const { data } = await axios.delete(`${API_DELETE_MEMO}/${_id}`, {
+        params: { userId: user?.sub },
+      });
+      if (data.success) {
+        toast.success("删除成功", toastObj);
+        updateMemoCount(-1);
+        mutate([API_GET_MEMO, searchValue, user?.sub]);
+      } else {
+        toast.error("删除失败", toastObj);
       }
-    }, 300),
-    [_id]
-  );
+    } catch (e) {
+      toast.error(`🦄 删除失败: ${e}`, toastObj);
+    }
+  }, 300);
 
-  const debouncedHandleSave = useCallback(
-    debounce(async () => {
-      try {
-        const { data } = await axios.patch(API_UPDATE_MEMO, {
-          _id,
-          message: editedMessage,
-          userId: user?.sub,
-        });
-        if (data.success) {
-          toast.success("更新成功", toastObj);
-          mutate([API_GET_MEMO, searchValue, user?.sub]);
-        } else {
-          toast.error("更新失败", toastObj);
-        }
-      } catch (e) {
-        toast.error(`🦄 更新失败: ${e}`, toastObj);
+  const debouncedHandleSave = debounce(async () => {
+    try {
+      const { data } = await axios.patch(API_UPDATE_MEMO, {
+        _id,
+        message: editedMessage,
+        userId: user?.sub,
+      });
+      if (data.success) {
+        toast.success("更新成功", toastObj);
+        mutate([API_GET_MEMO, searchValue, user?.sub]);
+      } else {
+        toast.error("更新失败", toastObj);
       }
-      setEditingId(null);
-    }, 300),
-    [_id, editedMessage]
-  );
+    } catch (e) {
+      toast.error(`🦄 更新失败: ${e}`, toastObj);
+    }
+    setEditingId(null);
+  }, 300);
 
   useEffect(() => {
     if (isEditing) setEditedMessage(message);
@@ -162,4 +148,4 @@ const MemoItem: React.FC<MemoItemProps> = ({
   );
 };
 
-export default memo(MemoItem);
+export default MemoItem;

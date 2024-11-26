@@ -1,14 +1,18 @@
-import React, {
+import {
+  type FC,
   type Dispatch,
   type SetStateAction,
   useState,
   useEffect,
-  memo,
 } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAtom } from "jotai";
 import { useAuth0 } from "@auth0/auth0-react";
-import { memoCountAtom, memoDataAtom } from "../../util/atoms";
+import {
+  memoCountAtom,
+  memoDataAtom,
+  selectedDateAtom,
+} from "../../util/atoms";
 import Heatmap from "./Heatmap";
 import { toZonedTime } from "date-fns-tz";
 import {
@@ -32,10 +36,12 @@ interface SideBarProps {
 
 const TIMEZONE = "Asia/Shanghai";
 
-const SideBar: React.FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
+const SideBar: FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
   const [memoCount] = useAtom(memoCountAtom);
   const [memoData] = useAtom(memoDataAtom);
+  const [, setSelectedDate] = useAtom(selectedDateAtom);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const [activityData, setActivityData] = useState<
     Array<{ date: string; count: number }>
   >([]);
@@ -111,7 +117,14 @@ const SideBar: React.FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
         <>
           <div className='sideStat-div'>
             <div className='memoCount-div'>
-              {memoCount} {memoCount > 1 ? "Memos" : "Memo"}
+              <span
+                className='memoCount'
+                onClick={() => {
+                  setSelectedDate(null);
+                  navigate("/memo");
+                }}>
+                {memoCount} {memoCount > 1 ? "Memos" : "Memo"}
+              </span>
             </div>
             <div className='gridView-div'>
               <Heatmap data={activityData} />
@@ -138,4 +151,4 @@ const SideBar: React.FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
   );
 };
 
-export default memo(SideBar);
+export default SideBar;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, memo } from "react";
+import { useState, useEffect } from "react";
 import { useAtom } from "jotai";
 import { Zoom } from "react-toastify";
 import useSWR from "swr";
@@ -38,78 +38,74 @@ const MemoList: React.FC<ListProps> = ({ listHeight }) => {
   const [crtKey, setCrtKey] = useState<number | undefined>(undefined);
   const [, setMemoCount] = useAtom(memoCountAtom);
 
-  const toastObj = useMemo(
-    () => ({
-      transition: Zoom,
-      autoClose: 1000,
-    }),
-    []
-  );
+  const toastObj = {
+    transition: Zoom,
+    autoClose: 1000,
+  };
 
   const { user } = useAuth0();
   const userId = user?.sub;
 
   const [, setMemoData] = useAtom(memoDataAtom);
 
-  const fetcher = useCallback(
-    async ([url, message, userId]: [string, string, string]): Promise<
-      MemoItem[]
-    > => {
-      const maxRetries = 3;
-      let lastError: any;
+  const fetcher = async ([url, message, userId]: [
+    string,
+    string,
+    string
+  ]): Promise<MemoItem[]> => {
+    const maxRetries = 3;
+    let lastError: any;
 
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-          const response = await axios.get(url, {
-            params: { message, userId },
-            timeout: 30000,
-            headers: {
-              "Cache-Control": "no-cache",
-              Pragma: "no-cache",
-            },
-          });
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const response = await axios.get(url, {
+          params: { message, userId },
+          timeout: 30000,
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+        });
 
-          if (!response.data.success) {
-            throw new Error(response.data.message || "请求失败");
-          }
-
-          return response.data.data;
-        } catch (error: any) {
-          lastError = error;
-          console.error(`Attempt ${attempt + 1} failed:`, error);
-
-          // 如果不是最后一次尝试，等待后重试
-          if (attempt < maxRetries - 1) {
-            await new Promise((resolve) =>
-              setTimeout(resolve, 1000 * (attempt + 1))
-            );
-            continue;
-          }
-
-          // 处理特定错误
-          if (axios.isCancel(error)) {
-            throw new Error("请求被取消");
-          }
-          if (error.code === "ECONNABORTED") {
-            throw new Error("请求超时，请刷新重试");
-          }
-          if (error.response?.status === 504) {
-            throw new Error("服务器响应超时，请稍后重试");
-          }
-          if (error.response?.status === 503) {
-            throw new Error("服务暂时不可用，请稍后重试");
-          }
-
-          throw new Error(
-            error.response?.data?.message || "请求失败，请稍后重试"
-          );
+        if (!response.data.success) {
+          throw new Error(response.data.message || "请求失败");
         }
-      }
 
-      throw lastError;
-    },
-    []
-  );
+        return response.data.data;
+      } catch (error: any) {
+        lastError = error;
+        console.error(`Attempt ${attempt + 1} failed:`, error);
+
+        // 如果不是最后一次尝试，等待后重试
+        if (attempt < maxRetries - 1) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * (attempt + 1))
+          );
+          continue;
+        }
+
+        // 处理特定错误
+        if (axios.isCancel(error)) {
+          throw new Error("请求被取消");
+        }
+        if (error.code === "ECONNABORTED") {
+          throw new Error("请求超时，请刷新重试");
+        }
+        if (error.response?.status === 504) {
+          throw new Error("服务器响应超时，请稍后重试");
+        }
+        if (error.response?.status === 503) {
+          throw new Error("服务暂时不可用，请稍后重试");
+        }
+
+        throw new Error(
+          error.response?.data?.message || "请求失败，请稍后重试"
+        );
+      }
+    }
+
+    throw lastError;
+  };
 
   const { data: listData, error } = useSWR<MemoItem[], Error>(
     [API_GET_MEMO, searchValue, userId],
@@ -128,14 +124,14 @@ const MemoList: React.FC<ListProps> = ({ listHeight }) => {
     }
   );
 
-  const isNeedOperate = useCallback((flag: string, key: number) => {
+  const isNeedOperate = (flag: string, key: number) => {
     setOperateFlag(flag === "Y");
     setCrtKey(key);
-  }, []);
+  };
 
-  const updateMemoCount = useCallback((change: number) => {
+  const updateMemoCount = (change: number) => {
     setMemoCount((prevCount) => prevCount + change);
-  }, []);
+  };
 
   useEffect(() => {
     if (listData) setMemoCount(listData.length);
@@ -143,29 +139,25 @@ const MemoList: React.FC<ListProps> = ({ listHeight }) => {
 
   const [selectedDate] = useAtom(selectedDateAtom);
 
-  const filteredListData = useMemo(() => {
-    if (!listData) return [];
+  const filteredListData = !listData
+    ? []
+    : listData.filter((item) => {
+        // 1. 先检查日期匹配，因为这个操作开销较大
+        if (selectedDate) {
+          const itemDate = toZonedTime(parseISO(item.createdAt), TIMEZONE);
+          const dateMatches = format(itemDate, "yyyy-MM-dd") === selectedDate;
+          if (!dateMatches) return false;
+        }
 
-    // 使用 Set 优化搜索性能
-    const searchTerms = searchValue.toLowerCase().split(" ");
-    const searchSet = new Set(searchTerms);
+        // 2. 如果没有搜索词，直接返回
+        if (!searchValue) return true;
 
-    return listData.filter((item) => {
-      // 1. 先检查日期匹配，因为这个操作开销较大
-      if (selectedDate) {
-        const itemDate = toZonedTime(parseISO(item.createdAt), TIMEZONE);
-        const dateMatches = format(itemDate, "yyyy-MM-dd") === selectedDate;
-        if (!dateMatches) return false;
-      }
-
-      // 2. 如果没有搜索词，直接返回
-      if (!searchValue) return true;
-
-      // 3. 搜索词匹配 - 使用 Set 来优化多关键词搜索
-      const itemText = item.message.toLowerCase();
-      return Array.from(searchSet).every((term) => itemText.includes(term));
-    });
-  }, [listData, searchValue, selectedDate]);
+        // 3. 搜索词匹配 - 使用 Set 来优化多关键词搜索
+        const itemText = item.message.toLowerCase();
+        const searchTerms = searchValue.toLowerCase().split(" ");
+        const searchSet = new Set(searchTerms);
+        return Array.from(searchSet).every((term) => itemText.includes(term));
+      });
 
   return (
     <>
@@ -197,4 +189,4 @@ const MemoList: React.FC<ListProps> = ({ listHeight }) => {
   );
 };
 
-export default memo(MemoList);
+export default MemoList;

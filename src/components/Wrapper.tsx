@@ -1,12 +1,12 @@
-import React, {
+import {
   useState,
   useEffect,
   useCallback,
   useMemo,
-  Dispatch,
-  SetStateAction,
-  FC,
   memo,
+  type FC,
+  type Dispatch,
+  type SetStateAction,
 } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import AppRoutes from "./AppRoutes";

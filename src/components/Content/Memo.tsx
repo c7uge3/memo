@@ -1,12 +1,4 @@
-import {
-  lazy,
-  Suspense,
-  useState,
-  useCallback,
-  useDeferredValue,
-  memo,
-  useMemo,
-} from "react";
+import { lazy, Suspense, useState, useDeferredValue } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import ErrorBoundary from "../Common/ErrorBoundary";
 import Loading from "../Common/loading";
@@ -31,26 +23,19 @@ function Memo() {
   );
 
   // 根据所获取的 editor 的高度，即时生成 Memo 列表内容区应有的高度，并重新渲染
-  const generalListHeight = useCallback(
-    (editorHeight: number) => {
-      const newHeight = window.innerHeight - (editorHeight + flexHeight);
-      if (listHeight !== newHeight) {
-        setListHeight(newHeight);
-      }
-    },
-    [listHeight, flexHeight]
-  );
+  const generalListHeight = (editorHeight: number) => {
+    const newHeight = window.innerHeight - (editorHeight + flexHeight);
+    if (listHeight !== newHeight) {
+      setListHeight(newHeight);
+    }
+  };
 
   // 当 generalListHeight 发生变化时，会延迟渲染
   const deferredSearchValue = useDeferredValue(generalListHeight);
 
-  const memoizedEditor = useMemo(
-    () => <Editor editorHeight={deferredSearchValue} />,
-    [deferredSearchValue]
-  );
-
-  const memoizedList = useMemo(
-    () => (
+  return (
+    <main className='content-div'>
+      <Editor editorHeight={deferredSearchValue} />
       <ErrorBoundary>
         <Suspense
           fallback={
@@ -61,14 +46,6 @@ function Memo() {
           <List listHeight={listHeight} />
         </Suspense>
       </ErrorBoundary>
-    ),
-    [listHeight]
-  );
-
-  return (
-    <main className='content-div'>
-      {memoizedEditor}
-      {memoizedList}
       <Suspense fallback={<Loading spinning={false} />}>
         <ToastContainer />
       </Suspense>
@@ -76,4 +53,4 @@ function Memo() {
   );
 }
 
-export default memo(Memo);
+export default Memo;

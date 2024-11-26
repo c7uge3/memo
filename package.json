@@ -12,7 +12,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "vercel-build": "vite build",
-    "vercel-dev": "vite build && (vite preview & node ./api/server.mjs)"
+    "vercel-dev": "vite build && (vite preview & node ./api/server.mjs)",
+    "build:prod": "vite build --mode production",
+    "analyze": "vite build --mode analyze",
+    "clean": "rm -rf node_modules/.vite dist",
+    "optimize": "vite optimize"
   },
   "keywords": [
     "memo",
@@ -22,6 +26,7 @@
   "author": "Chio",
   "license": "MIT",
   "devDependencies": {
+    "@babel/plugin-transform-react-jsx": "^7.25.9",
     "@types/node": "^18.19.0",
     "@types/react": "^18.3.8",
     "@types/react-dom": "^18.3.0",
@@ -29,34 +34,33 @@
     "@typescript-eslint/parser": "^8.6.0",
     "@vitejs/plugin-legacy": "^5.4.2",
     "@vitejs/plugin-react": "^4.3.1",
-    "dotenv": "^16.4.5",
     "less": "^4.2.0",
+    "sharp": "^0.33.5",
     "tsx": "^4.19.1",
-    "typescript": "^5.6.3",
-    "vercel": "^37.5.2",
-    "vite": "^5.4.3",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
     "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-pwa": "^0.21.0",
     "vite-plugin-vercel": "^9.0.1"
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
     "@auth0/auth0-react": "^2.2.4",
     "@hono/node-server": "^1.13.2",
-    "@vercel/node": "^3.2.14",
     "animate.css": "^4.1.1",
     "axios": "^1.7.7",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
-    "hono": "^4.6.8",
-    "jotai": "^2.9.3",
+    "dotenv": "^16.4.5",
+    "hono": "^4.6.11",
+    "jotai": "^2.10.3",
     "mongodb": "^6.8.1",
     "mongoose": "^8.6.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "19.0.0-rc.1",
+    "react-dom": "19.0.0-rc.1",
     "react-quill-new": "^3.3.2",
     "react-router-dom": "^6.26.2",
     "react-toastify": "^10.0.5",
-    "swr": "^2.2.5",
-    "typescript": "^5.6.3"
+    "swr": "^2.2.5"
   }
 }

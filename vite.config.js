@@ -2,23 +2,96 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import compression from "vite-plugin-compression";
 import legacy from "@vitejs/plugin-legacy";
-import vercel from "vite-plugin-vercel";
+import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
 
 export default defineConfig(({ mode }) => {
+  const isProduction = mode === "production";
+
   return {
     base: "/",
     root: process.cwd(),
+    build: {
+      outDir: "dist",
+      assetsDir: "assets",
+      sourcemap: !isProduction,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ["react", "react-dom"],
+          },
+          chunkFileNames: "assets/js/[name]-[hash].js",
+          entryFileNames: "assets/js/[name]-[hash].js",
+          assetFileNames: "assets/[ext]/[name]-[hash].[ext]",
+        },
+      },
+    },
     plugins: [
-      react(),
+      react({
+        jsxRuntime: "automatic",
+        babel: {
+          plugins: [
+            [
+              "@babel/plugin-transform-react-jsx",
+              {
+                runtime: "automatic",
+                importSource: "react",
+                useBuiltIns: true,
+              },
+            ],
+          ],
+        },
+      }),
+      VitePWA({
+        registerType: "autoUpdate",
+        manifest: {
+          name: "Memo",
+          short_name: "Memo",
+          description: "一个笔记应用",
+          theme_color: "#ffffff",
+          background_color: "#ffffff",
+          display: "standalone",
+          icons: [
+            {
+              src: "/img/icon-192x192.png",
+              sizes: "192x192",
+              type: "image/png",
+              purpose: "any maskable",
+            },
+            {
+              src: "/img/icon-512x512.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "any",
+            },
+          ],
+        },
+        workbox: {
+          globPatterns: ["**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}"],
+          runtimeCaching: [
+            {
+              urlPattern: ({ url }) => url.pathname.startsWith("/api/"),
+              handler: "NetworkOnly",
+              method: "GET",
+              options: {
+                backgroundSync: {
+                  name: "api-queue",
+                },
+              },
+            },
+          ],
+        },
+      }),
       compression({
         algorithm: "gzip",
         ext: ".gz",
+        threshold: 10240,
+        deleteOriginFile: false,
+        filter: (file) => /\.(js|css|html|svg)$/.test(file),
       }),
       legacy({
         targets: ["defaults", "not IE 11"],
       }),
-      vercel(),
     ],
     resolve: {
       alias: {
@@ -29,79 +102,15 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       open: true,
       cors: true,
+      proxy: {
+        "/api": {
+          target: "http://localhost:3001",
+          changeOrigin: true,
+          secure: false,
+        },
+      },
       hmr: {
-        overlay: false,
-      },
-      proxy:
-        mode !== "production"
-          ? {
-              "/api": {
-                target: "http://localhost:3001",
-                changeOrigin: true,
-              },
-            }
-          : undefined,
-      historyApiFallback: true,
-    },
-    build: {
-      minify: "terser",
-      target: "es2015",
-      outDir: "dist",
-      sourcemap: true,
-      terserOptions: {
-        compress: {
-          drop_console: true,
-          drop_debugger: true,
-        },
-      },
-      chunkSizeWarningLimit: 1000,
-      assetsInlineLimit: 4096,
-      assetsDir: "assets",
-      rollupOptions: {
-        input: {
-          main: path.resolve(__dirname, "index.html"),
-        },
-        output: {
-          assetFileNames: (assetInfo) => {
-            let extType = assetInfo.name.split(".")[1];
-            if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
-              extType = "img";
-            }
-            return `assets/${extType}/[name]-[hash][extname]`;
-          },
-          chunkFileNames: "assets/js/[name]-[hash].js",
-          entryFileNames: "assets/js/[name]-[hash].js",
-          manualChunks: {
-            vendor: ["react", "react-dom", "react-quill-new"],
-            utils: ["jotai", "swr", "axios"],
-          },
-        },
-        external: ["date-fns-tz/esm/index.js"],
-      },
-      reportCompressedSize: false,
-      emptyOutDir: true,
-      brotliSize: false,
-      manifest: true,
-    },
-    optimizeDeps: {
-      include: [
-        "react",
-        "react-dom",
-        "react-quill-new",
-        "jotai",
-        "swr",
-        "axios",
-      ],
-      exclude: ["@vite/client", "@vite/env"],
-    },
-    css: {
-      preprocessorOptions: {
-        less: {
-          javascriptEnabled: true,
-        },
-      },
-      modules: {
-        localsConvention: "camelCaseOnly",
+        overlay: true,
       },
     },
   };

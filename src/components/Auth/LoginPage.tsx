@@ -1,11 +1,9 @@
-import { type FC, memo, useState, useEffect } from "react";
+import { type FC, useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Navigate } from "react-router-dom";
 import Loading from "../Common/loading";
 
-const MemoizedLoading = memo(Loading);
-
-const LoginPage: FC = memo(() => {
+const LoginPage: FC = () => {
   const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0();
   const [hasRedirected, setHasRedirected] = useState(false);
 
@@ -19,7 +17,7 @@ const LoginPage: FC = memo(() => {
   if (isLoading || (!isAuthenticated && hasRedirected)) {
     return (
       <div className='loading-container'>
-        <MemoizedLoading spinning={true} tip='正在前往登录页面...' />
+        <Loading spinning={true} tip='正在前往登录页面...' />
       </div>
     );
   }
@@ -29,6 +27,6 @@ const LoginPage: FC = memo(() => {
   }
 
   return null;
-});
+};
 
 export default LoginPage;
