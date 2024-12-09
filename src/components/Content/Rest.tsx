@@ -14,7 +14,10 @@ function Rest() {
         <p>
           功德 + <label className='count-label'>{count}</label>
         </p>
-        <button className='increment-btn' onClick={increment}>
+        <button
+          className='increment-btn'
+          onClick={increment}
+          aria-label='增加功德'>
           敲 击
         </button>
       </div>

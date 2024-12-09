@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useDeferredValue } from "react";
+import { lazy, Suspense, useState, useRef, useEffect } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import ErrorBoundary from "../Common/ErrorBoundary";
 import Loading from "../Common/loading";
@@ -16,26 +16,50 @@ const ToastContainer = lazy(() =>
  * @returns Memo 组件
  */
 function Memo() {
-  const fixedHeight = 136; // Editor 组件的默认高度
-  const flexHeight = 50; // Editor 组件高度变化时会用到这个数值
-  const [listHeight, setListHeight] = useState(
-    () => window.innerHeight - (fixedHeight + flexHeight)
-  );
+  const [listHeight, setListHeight] = useState(window.innerHeight);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
-  // 根据所获取的 editor 的高度，即时生成 Memo 列表内容区应有的高度，并重新渲染
-  const generalListHeight = (editorHeight: number) => {
-    const newHeight = window.innerHeight - (editorHeight + flexHeight);
-    if (listHeight !== newHeight) {
-      setListHeight(newHeight);
+  // 监听窗口大小变化
+  useEffect(() => {
+    const updateHeight = () => {
+      if (contentRef.current && editorRef.current) {
+        const contentHeight = contentRef.current.clientHeight;
+        const editorHeight = editorRef.current.clientHeight;
+        setListHeight(contentHeight - editorHeight - 40);
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(updateHeight);
+
+    if (contentRef.current) {
+      resizeObserver.observe(contentRef.current);
+    }
+    if (editorRef.current) {
+      resizeObserver.observe(editorRef.current);
+    }
+
+    window.addEventListener("resize", updateHeight);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, []);
+
+  const handleEditorHeight = () => {
+    if (contentRef.current && editorRef.current) {
+      const contentHeight = contentRef.current.clientHeight;
+      const editorHeight = editorRef.current.clientHeight;
+      setListHeight(contentHeight - editorHeight - 40);
     }
   };
 
-  // 当 generalListHeight 发生变化时，会延迟渲染
-  const deferredSearchValue = useDeferredValue(generalListHeight);
-
   return (
-    <main className='content-div'>
-      <Editor editorHeight={deferredSearchValue} />
+    <main ref={contentRef} className='content-div'>
+      <div ref={editorRef}>
+        <Editor editorHeight={handleEditorHeight} />
+      </div>
       <ErrorBoundary>
         <Suspense
           fallback={
@@ -46,7 +70,7 @@ function Memo() {
           <List listHeight={listHeight} />
         </Suspense>
       </ErrorBoundary>
-      <Suspense fallback={<Loading spinning={false} />}>
+      <Suspense fallback={null}>
         <ToastContainer />
       </Suspense>
     </main>

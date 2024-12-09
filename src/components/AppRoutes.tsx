@@ -5,14 +5,22 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { Route, Routes, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  createRoutesFromElements,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import ProtectedRoute from "./Auth/ProtectedRoute";
 import SideBar from "./Nav/SideBar";
-import Memo from "./Content/Memo";
 import AuthWrapper from "./Auth/AuthWrapper";
-import LoginPage from "./Auth/LoginPage";
+import Loading from "./Common/loading";
 
+// 懒加载路由组件
+const LoginPage = lazy(() => import("./Auth/LoginPage"));
+const Memo = lazy(() => import("./Content/Memo"));
 const Rest = lazy(() => import("./Content/Rest"));
 
 type AppRoutesProps = {
@@ -23,29 +31,60 @@ type AppRoutesProps = {
 const AppRoutes: FC<AppRoutesProps> = ({ isCollapsed, setIsCollapsed }) => {
   const { isAuthenticated } = useAuth0();
 
-  return (
-    <>
-      {isAuthenticated && (
-        <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      )}
-      <Routes>
-        <Route path='/login' element={<LoginPage />} />
-        <Route element={<AuthWrapper />}>
-          <Route path='/' element={<ProtectedRoute element={<Memo />} />} />
-          <Route path='/memo' element={<ProtectedRoute element={<Memo />} />} />
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <>
+        <Route
+          path='/login'
+          element={
+            <Suspense fallback={<Loading spinning={true} />}>
+              <LoginPage />
+            </Suspense>
+          }
+        />
+        <Route
+          element={
+            <>
+              {isAuthenticated && (
+                <SideBar
+                  isCollapsed={isCollapsed}
+                  setIsCollapsed={setIsCollapsed}
+                />
+              )}
+              <AuthWrapper />
+            </>
+          }>
+          <Route
+            path='/'
+            element={
+              <Suspense fallback={<Loading spinning={true} />}>
+                <ProtectedRoute element={<Memo />} />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/memo'
+            element={
+              <Suspense fallback={<Loading spinning={true} />}>
+                <ProtectedRoute element={<Memo />} />
+              </Suspense>
+            }
+          />
           <Route
             path='/rest'
             element={
-              <Suspense fallback={<div>加载中...</div>}>
+              <Suspense fallback={<Loading spinning={true} />}>
                 <ProtectedRoute element={<Rest />} />
               </Suspense>
             }
           />
+          <Route path='*' element={<Navigate to='/memo' replace />} />
         </Route>
-        <Route path='*' element={<Navigate to='/memo' replace />} />
-      </Routes>
-    </>
+      </>
+    )
   );
+
+  return <RouterProvider router={router} />;
 };
 
 export default AppRoutes;

@@ -1,4 +1,12 @@
-import { useState, useEffect, useRef, Suspense, lazy } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  Suspense,
+  lazy,
+  useTransition,
+  useOptimistic,
+} from "react";
 import {
   API_GET_MEMO,
   API_UPDATE_MEMO,
@@ -9,12 +17,13 @@ import { useAtom } from "jotai";
 import { mutate } from "swr";
 import { useAuth0 } from "@auth0/auth0-react";
 import { searchValueAtom } from "../../util/atoms";
-import { toast } from "react-toastify";
+import { toast, Zoom, type ToastTransitionProps } from "react-toastify";
 import { modules, formats } from "../../util/quillConfig";
 import Loading from "../Common/loading";
-import debounce from "../../util/debounce";
 
 const LazyReactQuill = lazy(() => import("../Common/LazyReactQuill"));
+
+const TOAST_CONFIG = { transition: Zoom, autoClose: 1000 };
 
 interface MemoItemProps {
   item: {
@@ -26,8 +35,19 @@ interface MemoItemProps {
   operateFlag: boolean;
   crtKey: number | undefined;
   isNeedOperate: (flag: string, key: number) => void;
-  toastObj: { transition: any; autoClose: number };
   updateMemoCount: (count: number) => void;
+  toastObj?: {
+    transition: ({
+      children,
+      position,
+      preventExitTransition,
+      done,
+      nodeRef,
+      isIn,
+      playToast,
+    }: ToastTransitionProps) => React.JSX.Element;
+    autoClose: number;
+  };
 }
 
 const MemoItem: React.FC<MemoItemProps> = ({
@@ -36,13 +56,17 @@ const MemoItem: React.FC<MemoItemProps> = ({
   operateFlag,
   crtKey,
   isNeedOperate,
-  toastObj,
   updateMemoCount,
 }) => {
   const { _id, createdAt, message } = item;
   const canOperate = operateFlag && index === crtKey;
   const [editedMessage, setEditedMessage] = useState(message);
+  const [optimisticMessage, addOptimisticMessage] = useOptimistic(
+    message,
+    (_state, newMessage: string) => newMessage
+  );
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const quillRef = useRef<any>(null);
   const { user } = useAuth0();
   const [searchValue] = useAtom(searchValueAtom);
@@ -50,54 +74,92 @@ const MemoItem: React.FC<MemoItemProps> = ({
   const isEditing = editingId === _id;
 
   const handleEdit = () => {
-    setEditingId(_id);
-    setEditedMessage(message);
+    startTransition(() => {
+      setEditingId(_id);
+      setEditedMessage(message);
+      addOptimisticMessage(message);
+    });
   };
 
   const handleCancel = () => {
-    setEditedMessage(message);
-    setEditingId(null);
+    startTransition(() => {
+      setEditedMessage(message);
+      addOptimisticMessage(message);
+      setEditingId(null);
+    });
   };
 
-  const debouncedDeleteMemo = debounce(async () => {
+  const handleDelete = async () => {
+    if (!user?.sub) return;
+
+    // 乐观更新列表 UI
+    const key = [API_GET_MEMO, searchValue, user.sub];
+    const prevData = await mutate(
+      key,
+      (currentData: any) => {
+        if (!currentData) return currentData;
+        return currentData.filter((item: any) => item._id !== _id);
+      },
+      false
+    );
+
     try {
       const { data } = await axios.delete(`${API_DELETE_MEMO}/${_id}`, {
-        params: { userId: user?.sub },
+        params: { userId: user.sub },
       });
-      if (data.success) {
-        toast.success("删除成功", toastObj);
-        updateMemoCount(-1);
-        mutate([API_GET_MEMO, searchValue, user?.sub]);
-      } else {
-        toast.error("删除失败", toastObj);
-      }
-    } catch (e) {
-      toast.error(`🦄 删除失败: ${e}`, toastObj);
-    }
-  }, 300);
 
-  const debouncedHandleSave = debounce(async () => {
+      if (data.success) {
+        toast.success("删除成功", TOAST_CONFIG);
+        updateMemoCount(-1);
+        // 删除后重新获取数据
+        await mutate(key);
+      } else {
+        throw new Error("删除失败");
+      }
+    } catch (error) {
+      // Revert the optimistic update on error
+      toast.error("删除失败，请重试", TOAST_CONFIG);
+      await mutate(key, prevData, false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user?.sub) return;
+
     try {
+      startTransition(() => {
+        addOptimisticMessage(editedMessage);
+      });
+
       const { data } = await axios.patch(API_UPDATE_MEMO, {
         _id,
         message: editedMessage,
-        userId: user?.sub,
+        userId: user.sub,
       });
+
       if (data.success) {
-        toast.success("更新成功", toastObj);
-        mutate([API_GET_MEMO, searchValue, user?.sub]);
+        toast.success("更新成功", TOAST_CONFIG);
+        await mutate([API_GET_MEMO, searchValue, user.sub]);
+        setEditingId(null);
       } else {
-        toast.error("更新失败", toastObj);
+        throw new Error("更新失败");
       }
-    } catch (e) {
-      toast.error(`🦄 更新失败: ${e}`, toastObj);
+    } catch (error) {
+      startTransition(() => {
+        addOptimisticMessage(message);
+      });
+      toast.error(
+        error instanceof Error ? error.message : "更新失败",
+        TOAST_CONFIG
+      );
     }
-    setEditingId(null);
-  }, 300);
+  };
 
   useEffect(() => {
-    if (isEditing) setEditedMessage(message);
-  }, [isEditing, message]);
+    if (isEditing && quillRef.current) {
+      quillRef.current.focus();
+    }
+  }, [isEditing]);
 
   return (
     <li
@@ -110,7 +172,7 @@ const MemoItem: React.FC<MemoItemProps> = ({
           <span className='operate-label edit' onClick={handleEdit}>
             ✎
           </span>
-          <span className='operate-label delete' onClick={debouncedDeleteMemo}>
+          <span className='operate-label delete' onClick={handleDelete}>
             ✖
           </span>
         </div>
@@ -118,9 +180,9 @@ const MemoItem: React.FC<MemoItemProps> = ({
       <div onDoubleClick={handleEdit}>
         {isEditing ? (
           <div className='memoCard-div editing'>
-            <Suspense fallback={<Loading spinning={false} />}>
+            <Suspense fallback={<Loading spinning={isPending} />}>
               <LazyReactQuill
-                value={editedMessage}
+                value={optimisticMessage}
                 modules={modules}
                 formats={formats}
                 ref={quillRef}
@@ -129,10 +191,16 @@ const MemoItem: React.FC<MemoItemProps> = ({
               />
             </Suspense>
             <div className='edit-buttons'>
-              <button className='btn btn-save' onClick={debouncedHandleSave}>
+              <button
+                className='btn btn-save'
+                onClick={handleSave}
+                disabled={isPending}>
                 保存
               </button>
-              <button className='btn btn-cancel' onClick={handleCancel}>
+              <button
+                className='btn btn-cancel'
+                onClick={handleCancel}
+                disabled={isPending}>
                 取消
               </button>
             </div>
@@ -140,7 +208,7 @@ const MemoItem: React.FC<MemoItemProps> = ({
         ) : (
           <div
             className='memoCard-div'
-            dangerouslySetInnerHTML={{ __html: message }}
+            dangerouslySetInnerHTML={{ __html: optimisticMessage }}
           />
         )}
       </div>

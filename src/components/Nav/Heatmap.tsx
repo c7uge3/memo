@@ -55,12 +55,9 @@ const Heatmap: FC<HeatmapProps> = ({ data }) => {
   const [, setSelectedDate] = useAtom(selectedDateAtom);
 
   // 获取热力图数据
-  const getWeeksData = () => {
-    // 使用 reduce 计算活动数据
-    const activityData = data.reduce((map, { date, count }) => {
-      map.set(date, count);
-      return map;
-    }, new Map<string, number>());
+  function getWeeksData() {
+    // 使用 Map 优化查找性能
+    const activityData = new Map(data.map(({ date, count }) => [date, count]));
 
     const result: ActivityData[][] = [];
     let currentWeek: ActivityData[] = [];
@@ -87,20 +84,24 @@ const Heatmap: FC<HeatmapProps> = ({ data }) => {
     }
 
     return result;
-  };
+  }
 
-  const handleMouseEnter = (day: ActivityData, event: React.MouseEvent) => {
+  function handleMouseEnter(day: ActivityData, event: React.MouseEvent) {
     const rect = event.currentTarget.getBoundingClientRect();
     setPopup({
       date: day.date,
       count: day.count,
       position: { x: rect.left, y: rect.bottom + window.scrollY },
     });
-  };
+  }
 
-  const handleMouseLeave = () => setPopup(null);
+  function handleMouseLeave() {
+    setPopup(null);
+  }
 
-  const handleDayClick = (day: ActivityData) => setSelectedDate(day.date);
+  function handleDayClick(day: ActivityData) {
+    setSelectedDate(day.date);
+  }
 
   return (
     <>

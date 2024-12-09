@@ -687,3 +687,12 @@ span.ipt-span svg.fa-clear {
 .memoCount-div .memoCount:hover{
   color: #637dff;
 }
+.memo-list{overflow: auto;}
+
+.memo-item {
+  transition: opacity 0.2s ease-out;
+}
+
+.memo-item.deleting {
+  opacity: 0;
+}

@@ -1,32 +1,41 @@
-import React from "react";
-import { useEffect, useState, memo } from "react";
+import { useEffect, useState, forwardRef } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 
 interface LazyReactQuillProps {
   value: string;
   onChange: (content: string) => void;
-  modules: any;
-  formats: string[];
-  placeholder: string;
-  ref: React.RefObject<ReactQuill>;
+  modules?: any; // Optional
+  formats?: string[]; // Optional
+  placeholder?: string; // Optional
 }
 
-const LazyReactQuill = React.forwardRef<
-  ReactQuill,
-  Omit<LazyReactQuillProps, "ref">
->((props, ref) => {
-  const [mounted, setMounted] = useState(false);
+const LazyReactQuill = forwardRef<ReactQuill, LazyReactQuillProps>(
+  ({ value, onChange, modules, formats, placeholder }, ref) => {
+    const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+    useEffect(() => {
+      setMounted(true);
+    }, []);
 
-  if (!mounted) {
-    return null;
+    if (!mounted) {
+      return null;
+    }
+
+    const QuillComponent = ReactQuill as any;
+
+    return (
+      <QuillComponent
+        theme='snow'
+        value={value}
+        onChange={onChange}
+        modules={modules}
+        formats={formats}
+        placeholder={placeholder}
+        ref={ref}
+      />
+    );
   }
+);
 
-  return <ReactQuill {...props} ref={ref as any} />;
-});
-
-export default memo(LazyReactQuill);
+export default LazyReactQuill;

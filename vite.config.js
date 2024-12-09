@@ -29,18 +29,6 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react({
         jsxRuntime: "automatic",
-        babel: {
-          plugins: [
-            [
-              "@babel/plugin-transform-react-jsx",
-              {
-                runtime: "automatic",
-                importSource: "react",
-                useBuiltIns: true,
-              },
-            ],
-          ],
-        },
       }),
       VitePWA({
         registerType: "autoUpdate",

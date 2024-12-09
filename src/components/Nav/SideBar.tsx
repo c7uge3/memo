@@ -48,10 +48,9 @@ const SideBar: FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
   const deviceType = useDeviceType();
   const { user, isAuthenticated } = useAuth0();
 
-  useEffect(() => {
-    if (!memoData || !Array.isArray(memoData)) {
-      setActivityData([]);
-      return;
+  const calculateActivityData = () => {
+    if (!memoData?.length) {
+      return [];
     }
 
     const activityMap = new Map();
@@ -64,7 +63,7 @@ const SideBar: FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
       startDate = addDays(startDate, 1);
     }
 
-    memoData.forEach((item) => {
+    for (const item of memoData) {
       if (item?.createdAt) {
         const itemDate = toZonedTime(parseISO(item.createdAt), TIMEZONE);
         if (isAfter(itemDate, toZonedTime(subMonths(now, 3), TIMEZONE))) {
@@ -72,21 +71,27 @@ const SideBar: FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
           activityMap.set(date, (activityMap.get(date) || 0) + 1);
         }
       }
-    });
+    }
 
-    const newActivityData = Array.from(activityMap, ([date, count]) => ({
-      date,
-      count,
-    }));
+    return Array.from(activityMap, ([date, count]) => ({ date, count }));
+  };
+
+  useEffect(() => {
+    const newActivityData = calculateActivityData();
     setActivityData(newActivityData);
   }, [memoData]);
 
   useEffect(() => {
-    setIsCollapsed(deviceType === "mobile"); // 移动端默认折叠
+    setIsCollapsed(deviceType === "mobile");
   }, [deviceType, setIsCollapsed]);
 
   const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
+    setIsCollapsed((prev) => !prev);
+  };
+
+  const handleMemoClick = () => {
+    setSelectedDate(null);
+    navigate("/memo");
   };
 
   return (
@@ -117,12 +122,7 @@ const SideBar: FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
         <>
           <div className='sideStat-div'>
             <div className='memoCount-div'>
-              <span
-                className='memoCount'
-                onClick={() => {
-                  setSelectedDate(null);
-                  navigate("/memo");
-                }}>
+              <span className='memoCount' onClick={handleMemoClick}>
                 {memoCount} {memoCount > 1 ? "Memos" : "Memo"}
               </span>
             </div>
@@ -135,12 +135,12 @@ const SideBar: FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
               className={
                 pathname === "/memo" || pathname === "/" ? "selected-li" : ""
               }>
-              <Link to='/memo' className='memo'>
+              <Link to='/memo' className='memo' preventScrollReset>
                 📒 MEMO
               </Link>
             </li>
             <li className={pathname === "/rest" ? "selected-li" : ""}>
-              <Link to='/rest' className='rest'>
+              <Link to='/rest' className='rest' preventScrollReset>
                 🧘🏻 敲木鱼
               </Link>
             </li>

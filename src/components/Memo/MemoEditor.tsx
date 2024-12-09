@@ -1,4 +1,12 @@
-import { lazy, Suspense, useState, useEffect, useRef, type FC } from "react";
+import {
+  lazy,
+  Suspense,
+  useState,
+  useEffect,
+  useRef,
+  useTransition,
+  type FC,
+} from "react";
 import Search from "./MemoSearch";
 import { modules, formats } from "../../util/quillConfig";
 import { mutate } from "swr";
@@ -8,13 +16,11 @@ import { toast, Zoom } from "react-toastify";
 import { useAuth0 } from "@auth0/auth0-react";
 import Loading from "../Common/loading";
 
-const LazyReactQuill = lazy(() => import("../Common/LazyReactQuill")); // 懒加载 ReactQuill
+const LazyReactQuill = lazy(() => import("../Common/LazyReactQuill"));
 
-/**
- * 编辑器组件，用于输入和发送 memo
- * @param props（editorHeight 是父组件传递的回调函数，用于设置编辑器的高度）
- * @returns 编辑器组件
- */
+const DEFAULT_MESSAGE = "<p><br></p>";
+const TOAST_CONFIG = { transition: Zoom, autoClose: 1000 };
+
 const MemoEditor: FC<{
   editorHeight: (editorHeight: number) => void;
 }> = ({ editorHeight }) => {
@@ -22,64 +28,89 @@ const MemoEditor: FC<{
   const quillRef = useRef<any>(null);
   const fixedRef = useRef<{ clientHeight: number }>({ clientHeight: 0 });
   const [message, setMessage] = useState<string>("");
-  const [sendBtnClass, setSendBtnClass] = useState<string>("send-btn");
+  const [isPending, startTransition] = useTransition();
 
-  // 缓存 toast 对象，避免重复创建
-  const toastObj = {
-    transition: Zoom,
-    autoClose: 1000,
+  const handleTxtChange = (newMessage: string) => {
+    setMessage(newMessage);
+    editorHeight(fixedRef.current.clientHeight);
   };
 
-  // 编辑器默认值
-  const defaultMessage = "<p><br></p>"; // quill 的默认值
-
-  // 响应文本输入变更，并调用父组件的方法
-  const handleTxtChange = (message: string) => {
-    const fixedHeight: number = fixedRef.current.clientHeight;
-    const msgRole: boolean | "" = message && message !== defaultMessage;
-    setMessage(message); // 对 quill 做了双向数据绑定
-    setSendBtnClass(msgRole ? "send-btn send-btn-enable" : "send-btn"); // 对 quill 做了双向数据绑定
-    editorHeight(fixedHeight); // 调用父组件的方法，并传递参数
+  const revalidateData = async (userId: string) => {
+    return mutate(
+      [API_GET_MEMO, "", userId],
+      async () => {
+        const { data } = await axios.get(API_GET_MEMO, {
+          params: { message: "", userId },
+        });
+        return data.data;
+      },
+      {
+        revalidate: true,
+        populateCache: true,
+      }
+    );
   };
 
-  // 发送 message
-  const sendMessage = (message: string) => {
-    if (message && message !== defaultMessage) {
-      putMemo(message);
-      setMessage(""); // 发送后重置文本输入框内容
-    }
-  };
-
-  /**
-   * 新增 memo
-   * @param {*} message
-   * @returns 新增 memo 后的结果
-   */
   const putMemo = async (message: string) => {
-    if (!isAuthenticated || !user) {
-      toast.error("请先登录", toastObj);
+    if (!isAuthenticated || !user?.sub) {
+      toast.error("请先登录", TOAST_CONFIG);
       return;
     }
 
+    if (message === DEFAULT_MESSAGE) {
+      return;
+    }
+
+    const optimisticData = {
+      _id: Date.now().toString(),
+      message,
+      createdAt: new Date().toISOString(),
+    };
+
     try {
-      const userId = user.sub;
-      const response = await axios.post(API_PUT_MEMO, { message, userId });
-      const { success } = response.data;
+      // 乐观更新列表
+      mutate(
+        [API_GET_MEMO, "", user.sub],
+        async (currentData: any[] = []) => {
+          return [optimisticData, ...currentData];
+        },
+        false
+      );
+
+      const {
+        data: { success },
+      } = await axios.post(API_PUT_MEMO, {
+        message,
+        userId: user.sub,
+      });
 
       if (success) {
-        mutate([API_GET_MEMO, "", userId]); // 重新获取 memo 列表
-        toast.success("发送成功", toastObj);
+        await revalidateData(user.sub);
+        toast.success("发送成功", TOAST_CONFIG);
+        startTransition(() => {
+          setMessage("");
+        });
       } else {
-        toast.error("发送失败", toastObj);
+        throw new Error("发送失败");
       }
     } catch (error) {
-      toast.error("发送失败", toastObj);
+      // 发生错误时回滚乐观更新
+      mutate([API_GET_MEMO, "", user.sub]);
+      toast.error(
+        error instanceof Error ? error.message : "发送失败",
+        TOAST_CONFIG
+      );
     }
   };
 
   useEffect(() => {
-    quillRef.current?.focus();
-  }, []); // 组件挂载后，编辑器聚焦
+    const editor = quillRef.current;
+    if (editor) {
+      editor.focus();
+    }
+  }, []);
+
+  const isValidMessage = message && message !== DEFAULT_MESSAGE;
 
   return (
     <div
@@ -90,7 +121,7 @@ const MemoEditor: FC<{
           <span className='title-span'>Memo</span>
           <Search />
         </div>
-        <Suspense fallback={<Loading spinning={false} />}>
+        <Suspense fallback={<Loading spinning={isPending} />}>
           <LazyReactQuill
             value={message}
             modules={modules}
@@ -103,11 +134,9 @@ const MemoEditor: FC<{
         <input
           type='button'
           value='发送'
-          className={sendBtnClass}
-          disabled={sendBtnClass === "send-btn" ? true : false}
-          onClick={() => {
-            sendMessage(message);
-          }}
+          className={isValidMessage ? "send-btn send-btn-enable" : "send-btn"}
+          disabled={!isValidMessage || isPending}
+          onClick={() => isValidMessage && putMemo(message)}
         />
       </figure>
     </div>

@@ -1,4 +1,4 @@
-import { useState, useTransition } from "react";
+import { useState, useTransition, useDeferredValue, useEffect } from "react";
 import { useSetAtom } from "jotai";
 import { searchValueAtom } from "../../util/atoms";
 
@@ -8,16 +8,25 @@ import { searchValueAtom } from "../../util/atoms";
  */
 const MemoSearch: React.FC = () => {
   const [inputValue, setInputValue] = useState(""); // 输入值
+  const deferredValue = useDeferredValue(inputValue);
   const setSearchValue = useSetAtom(searchValueAtom); // Jotai 设置搜索值
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
+
+  // 使用 deferredValue 处理搜索
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchValue(deferredValue);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [deferredValue, setSearchValue]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputValue(value);
+    setInputValue(e.target.value);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !isPending) {
       startTransition(() => {
         setSearchValue(inputValue);
       });
@@ -25,6 +34,7 @@ const MemoSearch: React.FC = () => {
   };
 
   const clearSearchText = () => {
+    if (isPending) return;
     setInputValue("");
     startTransition(() => {
       setSearchValue("");
@@ -43,7 +53,11 @@ const MemoSearch: React.FC = () => {
       />
       <label className='fa-search'>🔍</label>
       {inputValue && (
-        <label className='fa-clear' onClick={clearSearchText}>
+        <label
+          className={`fa-clear ${
+            isPending ? "disabled" : ""
+          } operate-label delete`}
+          onClick={clearSearchText}>
           ✖
         </label>
       )}
