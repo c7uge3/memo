@@ -5,9 +5,9 @@ import "react-quill-new/dist/quill.snow.css";
 interface LazyReactQuillProps {
   value: string;
   onChange: (content: string) => void;
-  modules?: any; // Optional
-  formats?: string[]; // Optional
-  placeholder?: string; // Optional
+  modules?: any;
+  formats?: string[];
+  placeholder?: string;
 }
 
 const LazyReactQuill = forwardRef<ReactQuill, LazyReactQuillProps>(
