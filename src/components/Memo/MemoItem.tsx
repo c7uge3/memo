@@ -4,7 +4,6 @@ import {
   useRef,
   Suspense,
   lazy,
-  useTransition,
   useOptimistic,
 } from "react";
 import {
@@ -66,7 +65,6 @@ const MemoItem: React.FC<MemoItemProps> = ({
     (_state, newMessage: string) => newMessage
   );
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
   const quillRef = useRef<any>(null);
   const { user } = useAuth0();
   const [searchValue] = useAtom(searchValueAtom);
@@ -74,19 +72,15 @@ const MemoItem: React.FC<MemoItemProps> = ({
   const isEditing = editingId === _id;
 
   const handleEdit = () => {
-    startTransition(() => {
-      setEditingId(_id);
-      setEditedMessage(message);
-      addOptimisticMessage(message);
-    });
+    setEditingId(_id);
+    setEditedMessage(message);
+    addOptimisticMessage(message);
   };
 
   const handleCancel = () => {
-    startTransition(() => {
-      setEditedMessage(message);
-      addOptimisticMessage(message);
-      setEditingId(null);
-    });
+    setEditedMessage(message);
+    addOptimisticMessage(message);
+    setEditingId(null);
   };
 
   const handleDelete = async () => {
@@ -126,9 +120,7 @@ const MemoItem: React.FC<MemoItemProps> = ({
     if (!user?.sub) return;
 
     try {
-      startTransition(() => {
-        addOptimisticMessage(editedMessage);
-      });
+      addOptimisticMessage(editedMessage);
 
       const { data } = await axios.patch(API_UPDATE_MEMO, {
         _id,
@@ -144,14 +136,17 @@ const MemoItem: React.FC<MemoItemProps> = ({
         throw new Error("更新失败");
       }
     } catch (error) {
-      startTransition(() => {
-        addOptimisticMessage(message);
-      });
+      addOptimisticMessage(message);
       toast.error(
         error instanceof Error ? error.message : "更新失败",
         TOAST_CONFIG
       );
     }
+  };
+
+  const handleEditorChange = (content: string) => {
+    setEditedMessage(content);
+    addOptimisticMessage(content);
   };
 
   useEffect(() => {
@@ -179,27 +174,27 @@ const MemoItem: React.FC<MemoItemProps> = ({
       <div onDoubleClick={handleEdit}>
         {isEditing ? (
           <div className='memoCard-div editing'>
-            <Suspense fallback={<Loading spinning={isPending} />}>
+            <Suspense fallback={<Loading spinning={false} />}>
               <LazyReactQuill
-                value={optimisticMessage}
+                value={editedMessage}
                 modules={modules}
                 formats={formats}
                 ref={quillRef}
                 placeholder='请输入内容'
-                onChange={setEditedMessage}
+                onChange={handleEditorChange}
               />
             </Suspense>
             <div className='edit-buttons'>
               <button
                 className='btn btn-save'
                 onClick={handleSave}
-                disabled={isPending}>
+                disabled={false}>
                 保存
               </button>
               <button
                 className='btn btn-cancel'
                 onClick={handleCancel}
-                disabled={isPending}>
+                disabled={false}>
                 取消
               </button>
             </div>
