@@ -117,7 +117,6 @@ const MemoItem: React.FC<MemoItemProps> = ({
         throw new Error("删除失败");
       }
     } catch (error) {
-      // Revert the optimistic update on error
       toast.error("删除失败，请重试", TOAST_CONFIG);
       await mutate(key, prevData, false);
     }

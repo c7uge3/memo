@@ -26,7 +26,7 @@ function Memo() {
       if (contentRef.current && editorRef.current) {
         const contentHeight = contentRef.current.clientHeight;
         const editorHeight = editorRef.current.clientHeight;
-        setListHeight(contentHeight - editorHeight - 40);
+        setListHeight(contentHeight - editorHeight - 42);
       }
     };
 
@@ -51,7 +51,7 @@ function Memo() {
     if (contentRef.current && editorRef.current) {
       const contentHeight = contentRef.current.clientHeight;
       const editorHeight = editorRef.current.clientHeight;
-      setListHeight(contentHeight - editorHeight - 40);
+      setListHeight(contentHeight - editorHeight - 42);
     }
   };
 

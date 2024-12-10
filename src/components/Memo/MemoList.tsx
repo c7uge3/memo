@@ -174,7 +174,7 @@ const MemoList: React.FC<ListProps> = ({ listHeight }) => {
         if (!dateMatches) return false;
       }
 
-      if (!searchValue) return true;
+      if (!searchValue) return true; // 如果搜索值为空，返回所有数据
 
       const itemText = item.message.toLowerCase();
       const searchTerms = searchValue.toLowerCase().split(" ");
