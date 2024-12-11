@@ -5,7 +5,7 @@ const prefixCls = "sense-empty";
 const EmptyBox: React.FC<EmptyProps> = ({
   isShow = false,
   description = "暂无数据",
-  imageSrc = "src/img/empty.png",
+  imageSrc = "/img/empty.png",
 }) => (
   <>
     {isShow ? (
