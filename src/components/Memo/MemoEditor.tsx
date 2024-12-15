@@ -5,8 +5,10 @@ import {
   useEffect,
   useRef,
   useTransition,
+  useActionState,
   type FC,
 } from "react";
+import { useFormStatus } from "react-dom";
 import Search from "./MemoSearch";
 import { modules, formats } from "../../util/quillConfig";
 import { mutate } from "swr";
@@ -21,19 +23,35 @@ const LazyReactQuill = lazy(() => import("../Common/LazyReactQuill"));
 const DEFAULT_MESSAGE = "<p><br></p>";
 const TOAST_CONFIG = { transition: Zoom, autoClose: 1000 };
 
-const MemoEditor: FC<{
-  editorHeight: (editorHeight: number) => void;
-}> = ({ editorHeight }) => {
+type ActionState = {
+  status: "idle" | "success" | "error";
+  message?: string;
+};
+
+// 提取 SubmitButton 组件
+function SubmitButton({ isValidMessage }: { isValidMessage: boolean }) {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type='submit'
+      className={isValidMessage ? "send-btn send-btn-enable" : "send-btn"}
+      disabled={!isValidMessage || pending}>
+      {pending ? "发送中..." : "发送"}
+    </button>
+  );
+}
+
+interface MemoEditorProps {
+  editorHeight: (height: number) => void;
+}
+
+const MemoEditor: FC<MemoEditorProps> = ({ editorHeight }) => {
   const { user, isAuthenticated } = useAuth0();
   const quillRef = useRef<any>(null);
-  const fixedRef = useRef<{ clientHeight: number }>({ clientHeight: 0 });
-  const [message, setMessage] = useState<string>("");
+  const fixedRef = useRef<HTMLDivElement>(null);
+  const [message, setMessage] = useState<string>(DEFAULT_MESSAGE);
   const [isPending, startTransition] = useTransition();
-
-  const handleTxtChange = (newMessage: string) => {
-    setMessage(newMessage);
-    editorHeight(fixedRef.current.clientHeight);
-  };
 
   const revalidateData = async (userId: string) => {
     return mutate(
@@ -51,29 +69,29 @@ const MemoEditor: FC<{
     );
   };
 
-  const putMemo = async (message: string) => {
-    if (!isAuthenticated || !user?.sub) {
-      toast.error("请先登录", TOAST_CONFIG);
-      return;
-    }
+  // 使用 useActionState 处理异步操作
+  const [state, action] = useActionState(
+    async (prevState: ActionState, formData: FormData) => {
+      if (!isAuthenticated || !user?.sub) {
+        toast.error("请先登录", TOAST_CONFIG);
+        return { status: "error" as const, message: "请先登录" };
+      }
 
-    if (message === DEFAULT_MESSAGE) {
-      return;
-    }
+      const message = formData.get("message") as string;
+      if (message === DEFAULT_MESSAGE) {
+        return prevState;
+      }
 
-    const optimisticData = {
-      _id: Date.now().toString(),
-      message,
-      createdAt: new Date().toISOString(),
-    };
+      const optimisticData = {
+        _id: Date.now().toString(),
+        message,
+        createdAt: new Date().toISOString(),
+      };
 
-    try {
-      // 乐观更新列表
+      // 乐观更新
       mutate(
         [API_GET_MEMO, "", user.sub],
-        async (currentData: any[] = []) => {
-          return [optimisticData, ...currentData];
-        },
+        (currentData: any[] = []) => [optimisticData, ...currentData],
         false
       );
 
@@ -84,23 +102,31 @@ const MemoEditor: FC<{
         userId: user.sub,
       });
 
-      if (success) {
-        await revalidateData(user.sub);
-        toast.success("发送成功", TOAST_CONFIG);
-        startTransition(() => {
-          setMessage("");
-        });
-      } else {
-        throw new Error("发送失败");
+      if (!success) {
+        mutate([API_GET_MEMO, "", user.sub]);
+        toast.error("发送失败", TOAST_CONFIG);
+        return { status: "error" as const, message: "发送失败" };
       }
-    } catch (error) {
-      // 发生错误时回滚乐观更新
-      mutate([API_GET_MEMO, "", user.sub]);
-      toast.error(
-        error instanceof Error ? error.message : "发送失败",
-        TOAST_CONFIG
-      );
-    }
+
+      await revalidateData(user.sub);
+      toast.success("发送成功", TOAST_CONFIG);
+      startTransition(() => {
+        setMessage(DEFAULT_MESSAGE);
+      });
+      return { status: "success" as const };
+    },
+    { status: "idle" }
+  );
+
+  const handleTxtChange = (newMessage: string) => {
+    // 立即更新消息内容
+    setMessage(newMessage);
+    // 使用 startTransition 处理非紧急的高度更新
+    startTransition(() => {
+      if (fixedRef.current) {
+        editorHeight(fixedRef.current.clientHeight);
+      }
+    });
   };
 
   useEffect(() => {
@@ -110,34 +136,32 @@ const MemoEditor: FC<{
     }
   }, []);
 
-  const isValidMessage = message && message !== DEFAULT_MESSAGE;
+  const isValidMessage = Boolean(message) && message !== DEFAULT_MESSAGE;
 
   return (
-    <div
-      className='fixed-div'
-      ref={fixedRef as React.RefObject<HTMLDivElement>}>
+    <div className='fixed-div' ref={fixedRef}>
       <figure>
         <div className='topbar-div'>
           <span className='title-span'>Memo</span>
           <Search />
         </div>
-        <Suspense fallback={<Loading spinning={isPending} />}>
-          <LazyReactQuill
-            value={message}
-            modules={modules}
-            formats={formats}
-            ref={quillRef}
-            placeholder='现在的想法是...'
-            onChange={handleTxtChange}
-          />
-        </Suspense>
-        <input
-          type='button'
-          value='发送'
-          className={isValidMessage ? "send-btn send-btn-enable" : "send-btn"}
-          disabled={!isValidMessage || isPending}
-          onClick={() => isValidMessage && putMemo(message)}
-        />
+        <form action={action}>
+          <input type='hidden' name='message' value={message} />
+          <Suspense fallback={<Loading spinning={isPending} />}>
+            <LazyReactQuill
+              value={message}
+              modules={modules}
+              formats={formats}
+              ref={quillRef}
+              placeholder='现在的想法是...'
+              onChange={handleTxtChange}
+            />
+          </Suspense>
+          <SubmitButton isValidMessage={isValidMessage} />
+        </form>
+        {state.status === "error" && (
+          <div className='error-message'>{state.message}</div>
+        )}
       </figure>
     </div>
   );
