@@ -1,27 +1,34 @@
-import { lazy, Suspense, useState, useRef, useEffect } from "react";
-import "react-toastify/dist/ReactToastify.css";
+/**
+ * Memo 模块
+ * 包含编辑器和列表组件
+ * @module Memo
+ */
+
+import { Suspense, useState, useRef, useEffect } from "react";
 import ErrorBoundary from "../Common/ErrorBoundary";
 import Loading from "../Common/loading";
 import Editor from "../Memo/MemoEditor";
 import List from "../Memo/MemoList";
 
-const ToastContainer = lazy(() =>
-  import("react-toastify").then((module) => ({
-    default: module.ToastContainer,
-  }))
-);
-
 /**
- * Memo 组件，包含 Editor 和 List 组件
- * @returns Memo 组件
+ * Memo 主组件
+ * 管理编辑器和列表的布局及交互
+ * @returns React 组件
  */
 function Memo() {
   const [listHeight, setListHeight] = useState(window.innerHeight);
   const contentRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
 
-  // 监听窗口大小变化
+  /**
+   * 监听窗口大小变化
+   * 动态调整列表高度
+   */
   useEffect(() => {
+    /**
+     * 更新高度的处理函数
+     * 根据内容和编辑器的高度计算列表高度
+     */
     const updateHeight = () => {
       if (contentRef.current && editorRef.current) {
         const contentHeight = contentRef.current.clientHeight;
@@ -30,8 +37,10 @@ function Memo() {
       }
     };
 
+    // 创建 ResizeObserver 实例
     const resizeObserver = new ResizeObserver(updateHeight);
 
+    // 观察内容和编辑器元素
     if (contentRef.current) {
       resizeObserver.observe(contentRef.current);
     }
@@ -39,14 +48,24 @@ function Memo() {
       resizeObserver.observe(editorRef.current);
     }
 
+    // 监听窗口大小变化
     window.addEventListener("resize", updateHeight);
 
+    /**
+     * 清理监听器
+     * 在组件卸载时移除所有监听器
+     */
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener("resize", updateHeight);
     };
   }, []);
 
+  /**
+   * 处理编辑器高度变化
+   * 更新列表区域的高度
+   * @param height - 编辑器高度
+   */
   const handleEditorHeight = () => {
     if (contentRef.current && editorRef.current) {
       const contentHeight = contentRef.current.clientHeight;
@@ -70,9 +89,6 @@ function Memo() {
           <List listHeight={listHeight} />
         </Suspense>
       </ErrorBoundary>
-      <Suspense fallback={null}>
-        <ToastContainer />
-      </Suspense>
     </main>
   );
 }

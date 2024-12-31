@@ -36,6 +36,12 @@ interface SideBarProps {
 
 const TIMEZONE = "Asia/Shanghai";
 
+/**
+ * 侧边栏组件
+ * @param isCollapsed - 是否折叠
+ * @param setIsCollapsed - 设置是否折叠
+ * @returns 侧边栏组件
+ */
 const SideBar: FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
   const [memoCount] = useAtom(memoCountAtom);
   const [memoData] = useAtom(memoDataAtom);
@@ -48,6 +54,7 @@ const SideBar: FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
   const deviceType = useDeviceType();
   const { user, isAuthenticated } = useAuth0();
 
+  /** 计算活动数据 */
   const calculateActivityData = () => {
     if (!memoData?.length) {
       return [];
@@ -58,11 +65,13 @@ const SideBar: FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
     const endDate = endOfDay(toZonedTime(now, TIMEZONE));
     let startDate = startOfDay(toZonedTime(subMonths(now, 3), TIMEZONE));
 
+    /** 初始化日期范围 */
     while (isBefore(startDate, endDate) || isEqual(startDate, endDate)) {
       activityMap.set(format(startDate, "yyyy-MM-dd"), 0);
       startDate = addDays(startDate, 1);
     }
 
+    /** 统计活动数据 */
     for (const item of memoData) {
       if (item?.createdAt) {
         const itemDate = toZonedTime(parseISO(item.createdAt), TIMEZONE);
@@ -76,11 +85,13 @@ const SideBar: FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
     return Array.from(activityMap, ([date, count]) => ({ date, count }));
   };
 
+  /** 监听数据变化并更新活动数据 */
   useEffect(() => {
     const newActivityData = calculateActivityData();
     setActivityData(newActivityData);
-  }, [memoData]);
+  }, [memoData, memoCount]);
 
+  /** 监听设备类型变化 */
   useEffect(() => {
     setIsCollapsed(deviceType === "mobile");
   }, [deviceType, setIsCollapsed]);
@@ -127,7 +138,7 @@ const SideBar: FC<SideBarProps> = ({ isCollapsed, setIsCollapsed }) => {
               </span>
             </div>
             <div className='gridView-div'>
-              <Heatmap data={activityData} />
+              <Heatmap key={memoCount} data={activityData} />
             </div>
           </div>
           <ul className='sideMenu-ul'>

@@ -4,7 +4,7 @@ import { format, parse } from "date-fns";
 
 const TIMEZONE = "Asia/Shanghai";
 
-// 定义 Schema
+/** 定义 Schema */
 const DataSchema = new mongoose.Schema(
   {
     userId: {
@@ -40,7 +40,7 @@ const DataSchema = new mongoose.Schema(
   }
 );
 
-// 创建模型
+/** 创建模型 */
 const Data = mongoose.model("Data", DataSchema);
 
 export default Data;

@@ -4,6 +4,15 @@ import compression from "vite-plugin-compression";
 import legacy from "@vitejs/plugin-legacy";
 import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
+import { fileURLToPath } from "url";
+
+/**
+ * 使用 import.meta.url 获取当前文件的 URL
+ * 使用 fileURLToPath 将 URL 转换为本地文件路径
+ * 使用 path.dirname 获取当前文件所在目录
+ */
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === "production";

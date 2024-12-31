@@ -1,35 +1,44 @@
 /**
- * version: 1.0
- * author: Chio
- * createTime: 2024-10-20
- * updateTime: 2024-10-20
+ * 全局样式定义
+ * @version 1.0
+ * @author Chio
+ * @createTime 2024-10-20
+ * @updateTime 2024-10-20
  */
 
 @charset 'utf-8';
 
+/* 基础样式重置 */
 * {
   font-display: swap;
   font-family:"PingFang SC", Helvetica, Arial, sans-serif;
   outline: none;
 }
+
+/* 布局基础样式 */
 html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
 }
+
 body {
   overflow: hidden;
   background: #fafafa;
-  min-width: 320px; /* 添加最小宽度 */
+  min-width: 320px;
 }
+
+/* 链接样式 */
 a {
   text-decoration: none;
   color: #9d9d9d;
 }
+
+/* 主容器样式 */
 .wrapper-div {
   display: flex;
   margin: 0 auto;
-  min-width: 320px; /* 添加最小宽度 */
+  min-width: 320px;
   max-width: 880px;
   min-height: 100vh;
   width: 100%;
@@ -39,6 +48,8 @@ a {
   flex-basis: auto;
   box-sizing: border-box;
 }
+
+/* 加载容器样式 */
 .loading-container {
   position: absolute;
   left: 0;
@@ -47,18 +58,22 @@ a {
   width: 100%;
 }
 
-/** scrollbar */
+/* 滚动条样式 */
 ::-webkit-scrollbar {
   width: 0 !important;
   height: 0 !important;
 }
+
 ::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.3) !important;
   border-radius: 100px !important;
 }
+
 ::-webkit-scrollbar-track {
   background-color: transparent !important;
 }
+
+/* 侧边栏样式 */
 .side-div {
   transition: all 0.3s ease;
   position: relative;
@@ -544,6 +559,7 @@ span.ipt-span svg.fa-clear {
   margin-bottom: 10px;
   color: #323232;
   background: #ffffff;
+  border: 1px solid #e8e8e8;
   border-radius: 6px;
   list-style: none;
   font-size: 14px;
@@ -695,4 +711,12 @@ span.ipt-span svg.fa-clear {
 
 .memo-item.deleting {
   opacity: 0;
+}
+.loading-more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  background: transparent;
+  transition: all 0.3s ease;
 }

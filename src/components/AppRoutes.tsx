@@ -18,7 +18,7 @@ import SideBar from "./Nav/SideBar";
 import AuthWrapper from "./Auth/AuthWrapper";
 import Loading from "./Common/loading";
 
-// 懒加载路由组件
+/** lazy 加载路由组件 */
 const LoginPage = lazy(() => import("./Auth/LoginPage"));
 const Memo = lazy(() => import("./Content/Memo"));
 const Rest = lazy(() => import("./Content/Rest"));
@@ -28,6 +28,12 @@ type AppRoutesProps = {
   setIsCollapsed: Dispatch<SetStateAction<boolean>>;
 };
 
+/**
+ * 路由组件
+ * @param isCollapsed - 是否折叠
+ * @param setIsCollapsed - 设置是否折叠
+ * @returns 路由组件
+ */
 const AppRoutes: FC<AppRoutesProps> = ({ isCollapsed, setIsCollapsed }) => {
   const { isAuthenticated } = useAuth0();
 

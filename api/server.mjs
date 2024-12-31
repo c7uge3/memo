@@ -1,3 +1,7 @@
+/**
+ * 数据库连接和初始化模块
+ */
+
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { logger } from "hono/logger";
@@ -13,6 +17,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import path from "path";
 import { fileURLToPath } from "url";
 
+// 非生产环境加载环境变量
 if (process.env.NODE_ENV !== "production") {
   config();
 }
@@ -21,6 +26,10 @@ const app = new Hono();
 
 let isConnected = false;
 
+/**
+ * 连接数据库
+ * 包含重试和错误处理机制
+ */
 const connectDB = async () => {
   if (isConnected) return;
 
@@ -45,7 +54,10 @@ const connectDB = async () => {
   }
 };
 
-// 初始化数据库连接
+/**
+ * 初始化数据库连接
+ * 最多尝试3次连接，失败后等待2秒重试
+ */
 const initDB = async () => {
   for (let i = 0; i < 3; i++) {
     try {
@@ -56,7 +68,6 @@ const initDB = async () => {
       if (i === 2) {
         console.error("All connection attempts failed");
       } else {
-        // 等待一段时间后重试
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     }
@@ -66,7 +77,9 @@ const initDB = async () => {
 // 立即执行初始化
 initDB();
 
-// 中间件确保数据库连接
+/**
+ * 中间件：确保数据库连接
+ */
 app.use("*", async (c, next) => {
   if (!isConnected) {
     try {
@@ -88,7 +101,9 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-// 修改请求头适配中间件
+/**
+ * 中间件：修改请求头适配
+ */
 app.use("*", async (c, next) => {
   const originalRequest = c.req.raw;
   if (
@@ -108,7 +123,9 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-// CORS 中间件
+/**
+ * 中间件：CORS 配置
+ */
 app.use("*", async (c, next) => {
   c.res.headers.set("Access-Control-Allow-Origin", "*");
   c.res.headers.set(
@@ -124,12 +141,17 @@ app.use("*", async (c, next) => {
   await next();
 });
 
+// 应用通用中间件
 app.use("*", logger());
 app.use("*", prettyJSON());
 app.use("*", secureHeaders());
 app.use("*", etag());
 
-// 错误处理
+/**
+ * 统一错误处理函数
+ * @param {Context} c - Hono 上下文
+ * @param {Error} err - 错误对象
+ */
 const handleError = (c, err) => {
   console.error("Operation failed:", err);
   return c.json(
@@ -141,14 +163,23 @@ const handleError = (c, err) => {
   );
 };
 
-// API 路由优化 - 移除重复的连接检查
+/**
+ * GET /api/getMemo - 获取备忘录列表
+ * 支持分页、搜索和完整数据获取
+ */
 app.get("/api/getMemo", async (c) => {
   const startTime = Date.now();
+  const TIMEOUT_MS = 20000;
 
   try {
-    const { message, userId } = c.req.query();
+    const {
+      message,
+      userId,
+      page = 1,
+      pageSize = 10,
+      full = false,
+    } = c.req.query();
 
-    // 验证必需参数
     if (!userId) {
       return c.json(
         {
@@ -159,47 +190,121 @@ app.get("/api/getMemo", async (c) => {
       );
     }
 
+    // 构建查询条件
     const query = {};
     if (message) query.message = { $regex: message, $options: "i" };
     if (userId) query.userId = userId;
 
-    // 添加超时控制
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Query timeout")), 25000);
-    });
+    // 设置查询超时
+    let isTimeout = false;
+    const timeoutId = setTimeout(() => {
+      isTimeout = true;
+    }, TIMEOUT_MS);
 
-    // 执行查询
-    const queryPromise = Data.find(query)
-      .select("message userId createdAt")
-      .sort({ createdAt: -1 })
-      .limit(30)
-      .lean()
-      .exec();
+    try {
+      // 获取总数
+      const totalCount = await Data.countDocuments(query).maxTimeMS(TIMEOUT_MS);
 
-    // 使用 Promise.race 确保查询不会超时
-    const data = await Promise.race([queryPromise, timeoutPromise]);
+      // 如果是第一页且请求全量数据
+      if (page === "1" && full === "true") {
+        const [pageData, fullData] = await Promise.all([
+          Data.find(query)
+            .select("message userId createdAt")
+            .sort({ createdAt: -1 })
+            .limit(parseInt(pageSize))
+            .lean()
+            .maxTimeMS(TIMEOUT_MS)
+            .exec(),
+          Data.find(query)
+            .select("message userId createdAt")
+            .sort({ createdAt: -1 })
+            .lean()
+            .maxTimeMS(TIMEOUT_MS)
+            .exec(),
+        ]);
 
-    // 添加响应时间指标
-    const duration = Date.now() - startTime;
+        clearTimeout(timeoutId);
 
-    return c.json({
-      success: true,
-      data,
-      metrics: {
-        duration,
-        timestamp: new Date().toISOString(),
-      },
-    });
+        if (isTimeout) {
+          throw new Error("Query timeout");
+        }
+
+        return c.json({
+          success: true,
+          data: pageData,
+          fullData,
+          hasMore: pageSize < totalCount,
+          totalCount,
+          currentPage: 1,
+          totalPages: Math.ceil(totalCount / pageSize),
+          metrics: {
+            duration: Date.now() - startTime,
+            timestamp: new Date().toISOString(),
+          },
+        });
+      }
+
+      // 常规分页查询
+      const currentPage = parseInt(page);
+      const limit = parseInt(pageSize);
+      const skip = (currentPage - 1) * limit;
+
+      if (isNaN(currentPage) || currentPage < 1 || isNaN(limit) || limit < 1) {
+        return c.json(
+          {
+            success: false,
+            message: "Invalid pagination parameters",
+          },
+          400
+        );
+      }
+
+      const data = await Data.find(query)
+        .select("message userId createdAt")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean()
+        .maxTimeMS(TIMEOUT_MS)
+        .exec();
+
+      clearTimeout(timeoutId);
+
+      if (isTimeout) {
+        throw new Error("Query timeout");
+      }
+
+      const hasMore = skip + data.length < totalCount;
+
+      return c.json({
+        success: true,
+        data,
+        hasMore,
+        totalCount,
+        currentPage,
+        totalPages: Math.ceil(totalCount / limit),
+        metrics: {
+          duration: Date.now() - startTime,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
   } catch (err) {
     const duration = Date.now() - startTime;
     console.error("API Error:", {
       error: err.message,
       duration,
       timestamp: new Date().toISOString(),
+      stack: err.stack,
     });
 
-    // 根据错误类型返回适当的状态码
-    if (err.message === "Query timeout") {
+    if (
+      err.message === "Query timeout" ||
+      err.name === "MongooseError" ||
+      duration >= TIMEOUT_MS
+    ) {
       return c.json(
         {
           success: false,
@@ -222,6 +327,9 @@ app.get("/api/getMemo", async (c) => {
   }
 });
 
+/**
+ * POST /api/putMemo - 创建新的备忘录
+ */
 app.post(
   "/api/putMemo",
   validator("json", (value, c) => {
@@ -243,6 +351,9 @@ app.post(
   }
 );
 
+/**
+ * PATCH /api/updateMemo - 更新备忘录
+ */
 app.patch(
   "/api/updateMemo",
   validator("json", (value, c) => {
@@ -270,6 +381,9 @@ app.patch(
   }
 );
 
+/**
+ * DELETE /api/deleteMemo/:_id - 删除备忘录
+ */
 app.delete("/api/deleteMemo/:_id", async (c) => {
   try {
     const _id = c.req.param("_id");
@@ -290,7 +404,9 @@ app.delete("/api/deleteMemo/:_id", async (c) => {
   }
 });
 
-// 添加新的静态文件和路由处理
+/**
+ * 静态文件服务中间件
+ */
 app.use("*", async (c, next) => {
   // 如果是 API 请求，继续下一个中间件
   if (c.req.path.startsWith("/api/")) {
@@ -316,7 +432,7 @@ app.use("*", async (c, next) => {
 
 const port = process.env.PORT || 3001;
 
-// 生产环境和开发环境都使用相同的服务器配置
+// 启动服务器
 serve({
   fetch: app.fetch,
   port,

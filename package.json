@@ -13,7 +13,8 @@
     "build:prod": "vite build --mode production",
     "analyze": "vite build --mode analyze",
     "clean": "rm -rf node_modules/.vite dist",
-    "optimize": "vite optimize"
+    "optimize": "vite optimize",
+    "knip": "knip"
   },
   "keywords": [
     "memo",
@@ -30,7 +31,10 @@
     "@typescript-eslint/parser": "^8.17.0",
     "@vitejs/plugin-legacy": "^6.0.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "knip": "^5.41.1",
     "less": "^4.2.1",
+    "postcss": "^8.4.49",
     "sharp": "^0.33.5",
     "typescript": "^5.7.2",
     "vite": "^6.0.3",
